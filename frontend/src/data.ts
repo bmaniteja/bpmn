@@ -3,21 +3,50 @@ const position = { x: 0, y: 0 };
 
 export const genereatedNodes = [
     {
-        "id": "swimlane-1",
+        "id": "1",
         "type": "swimLaneNode",
         "position": {
             "x": 0,
             "y": 0
         },
         "data": {
-            "label": "Operator"
+            "label": "Swimlane"
         },
-        style: { width: 720, height: 100 },
+        style: { width: 200, height: 100 },
     },
     {
-        "id": "start-1",
+        "id": "5",
+        "type": "swimLaneNode",
+        "position": {
+            "x": 0,
+            "y": 102
+        },
+        "data": {
+            "label": "Swimlane 2"
+        },
+        style: { width: 200, height: 100 },
+    },
+    {
+        "id": "6",
         "type": "startNode",
-        "parentId": "swimlane-1",
+        position,
+        "parentId": "5",
+        "extent": "parent",
+    },
+    {
+        "id": "7",
+        "type": "decisionNode",
+        position,
+        "parentId": "5",
+        "extent": "parent",
+        "data": {
+            "label": "Approval"
+        },
+    },
+    {
+        "id": "2",
+        "type": "startNode",
+        "parentId": "1",
         "extent": "parent",
         "data": {
             "label": "Start"
@@ -25,51 +54,9 @@ export const genereatedNodes = [
         position
     },
     {
-        "id": "process-1",
+        "id": "3",
         "type": "processNode",
-        "parentId": "swimlane-1",
-        "extent": "parent",
-        "data": {
-            "label": "Submit PO"
-        },
-        position
-    },
-    {
-        "id": "swimlane-2",
-        "type": "swimLaneNode",
-        "position": {
-            "x": 0,
-            "y": 102
-        },
-        "data": {
-            "label": "Operations Admin"
-        },
-        style: { width: 720, height: 100 },
-    },
-    {
-        "id": "process-2",
-        "type": "processNode",
-        "parentId": "swimlane-2",
-        "extent": "parent",
-        "data": {
-            "label": "Review PO"
-        },
-        position
-    },
-    {
-        "id": "decision-1",
-        "type": "decisionNode",
-        "parentId": "swimlane-2",
-        "extent": "parent",
-        "data": {
-            "label": "Approve or Reject"
-        },
-        position
-    },
-    {
-        "id": "process-3",
-        "type": "processNode",
-        "parentId": "swimlane-1",
+        "parentId": "1",
         "extent": "parent",
         "data": {
             "label": "Edit PO"
@@ -77,9 +64,9 @@ export const genereatedNodes = [
         position
     },
     {
-        "id": "end-1",
+        "id": "4",
         "type": "endNode",
-        "parentId": "swimlane-2",
+        "parentId": "1",
         "extent": "parent",
         "data": {
             "label": "End"
@@ -90,48 +77,24 @@ export const genereatedNodes = [
 
 export const generatedEdges = [
     {
-        "id": "start-1-process-1",
-        "source": "start-1",
-        "target": "process-1",
+        "id": "2-3",
+        "source": "2",
+        "target": "3",
         "type": "smoothstep",
         "animated": true
     },
     {
-        "id": "process-1-process-2",
-        "source": "process-1",
-        "target": "process-2",
+        "id": "3-4",
+        "source": "3",
+        "target": "4",
         "type": "smoothstep",
         "animated": true
     },
     {
-        "id": "process-2-decision-1",
-        "source": "process-2",
-        "target": "decision-1",
+        "id": "6-7",
+        "source": "6",
+        "target": "7",
         "type": "smoothstep",
-        "animated": true
-    },
-    {
-        "id": "decision-1-process-3",
-        "source": "decision-1",
-        "target": "process-3",
-        "type": "smoothstep",
-        "label": "Reject",
-        "animated": true
-    },
-    {
-        "id": "decision-1-end-1",
-        "source": "decision-1",
-        "target": "end-1",
-        "type": "smoothstep",
-        "label": "Approve",
-        "animated": true
-    },
-    {
-        "id": "process-3-process-2",
-        "source": "process-3",
-        "target": "process-2",
-        "type": "smoothstep",
-        "label": "Re-submit",
         "animated": true
     }
 ];

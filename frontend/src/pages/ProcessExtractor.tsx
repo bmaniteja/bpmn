@@ -11,6 +11,7 @@ import type { IconProps } from '@radix-ui/react-icons/dist/types';
 interface ProcessExtractionPageProps {
   socketUrl?: string;
   className?: string;
+  setData: any
 }
 
 interface ExtractionState {
@@ -18,7 +19,7 @@ interface ExtractionState {
   action?: string;
   loading: boolean;
   error: string | null;
-  Icon?: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<SVGSVGElement>> | React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>
+  Icon?: any
 }
 
 const palceHolder = `Describe your business process or feature... 
@@ -28,7 +29,9 @@ Example: 'Users can submit purchase orders which need approval from their manage
 const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
   socketUrl = 'ws://localhost:3000',
   className = '',
+  setData
 }) => {
+  const [featureDescription, setFeatureDescription] = useState('');
   const [extractionState, setExtractionState] = useState<ExtractionState>({
     status: 'connecting',
     loading: false,
@@ -59,24 +62,62 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
     // simulate some delay
     setTimeout(() => {
       setExtractionState({
-      status: 'idle',
-      loading: false,
-      error: null,
-      action: 'Conencted & Waiting',
-      Icon: () => <CheckCircledIcon />
-    })
+        status: 'idle',
+        loading: false,
+        error: null,
+        action: 'Conencted & Waiting',
+        Icon: () => <CheckCircledIcon />
+      })
     }, 1000)
     const socket = socketRef.current;
-    socket.on('process:extracted', (data) => { console.log(data); });
+    socket.on('agent:status', (status: { status: string; action?: string }) => {
+      // @ts-expect-error
+      setExtractionState(prev => ({
+        ...prev,
+        status: status.status as any,
+        action: status.action,
+        loading: status.status !== 'complete' && status.status !== 'error',
+        Icon: () => "🤔"
+      }));
+    });
+    socket.on('agent:error', (error: { message: string; timestamp: string }) => {
+      setExtractionState(prev => ({
+        ...prev,
+        status: 'error',
+        loading: false,
+        error: error.message,
+      }));
+    });
+    socket.on('process:extracted', (data) => {
+      console.log(data);
+      setData({
+        initialNodes: data.processData.nodes.map((node: any) => {
+          if (node.type === 'swimLaneNode') {
+            node.style = { width: 200, height: 100 } // default height and width
+          }
+          return node;
+        }),
+        initialEdges: data.processData.edges
+      });
+      setTimeout(() => {
+        setExtractionState({
+        status: 'complete',
+        loading: false,
+        error: null,
+        action: 'Conencted & Waiting',
+        Icon: () => <CheckCircledIcon />
+      })
+      }, 10);
+    });
   };
 
-  const startExtraction = (message: string) => {
+  const startExtraction = () => {
     if (!socketRef.current) return;
     const socket = socketRef.current;
 
     socket.emit('process:extract', {
       sessionId,
-      featureDescription: message
+      featureDescription
     })
   }
 
@@ -85,9 +126,8 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
       <Alert className='items-center content-center mb-5'>
         {extractionState.Icon && <extractionState.Icon />}{`${extractionState.action}`}
       </Alert>
-      <Textarea className='mb-4' placeholder={palceHolder}></Textarea>
-      {/* <Button variant={'outline'} onClick={() => { }} className='mr-2 cursor-pointer hover:text-black hover:bg-white'> <DiscIcon /> Load Mock</Button> */}
-      <Button disabled={extractionState.status === 'connecting'} variant={'outline'} onClick={() => { }} className='cursor-pointer hover:text-black hover:bg-white'> <MagicWandIcon /> Generate</Button>
+      <Textarea name='featureDescription' className='mb-4' placeholder={palceHolder} value={featureDescription} onChange={(e) => setFeatureDescription(e.target.value)}></Textarea>
+      <Button disabled={extractionState.status === 'connecting'} variant={'outline'} onClick={startExtraction} className='cursor-pointer hover:text-black hover:bg-white'> <MagicWandIcon /> Generate</Button>
     </div>
   </>);
 }

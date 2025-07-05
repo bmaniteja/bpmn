@@ -8,22 +8,16 @@ import ProcessExtractor from './pages/ProcessExtractor'
 function App() {
 
   const [data, setData] = useState<any>({
-    initialNodes:[],
-    initialEdges:[]
+    initialNodes: genereatedNodes,
+    initialEdges: generatedEdges,
+    isMock: true
   });
-
-  useEffect(()=> {
-      setData({
-        initialNodes: genereatedNodes,
-        initialEdges: generatedEdges
-      })
-  }, []);
 
   return (
     <>
       <div className='flex lg:flex-row justify-center flex-col-reverse h-dvh'>
-        <ProcessExtractor />
-        <SwimLanesViewer initialNodes={data.initialNodes} initialEdges={data.initialEdges}/>
+        <ProcessExtractor setData={setData}/>
+        <SwimLanesViewer initialNodes={data.initialNodes} initialEdges={data.initialEdges} isMock={data.isMock}/>
       </div>
     </>
   )

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import dagre from '@dagrejs/dagre';
 import { toPng } from 'html-to-image';
 import { JsonEditor, githubDarkTheme } from 'json-edit-react';
-import { CodeIcon, DownloadIcon, ImageIcon } from '@radix-ui/react-icons'
+import { CodeIcon, DownloadIcon, ImageIcon, StarIcon } from '@radix-ui/react-icons'
 import { ReactFlow, Controls, Background, type Node, useNodesState, useEdgesState, addEdge, ConnectionLineType, ControlButton, type ReactFlowInstance } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -61,6 +61,19 @@ const getNodeDimensions = (type: string) => {
 const getLayoutedElements = (nodes: any, edges: any, direction = 'LR') => {
   const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   const isHorizontal = direction === 'LR';
+  const newNodes: any[] = [];
+  const swimLanesWidthHeight: any = {
+    width: 0
+  };
+  const swimLanesById:any = {};
+  nodes.forEach((node: any) => {
+    if(node.type === 'swimLaneNode') {
+      if (!swimLanesById[node.id]) {
+        swimLanesById[node.id] = node;
+      }
+    }
+  });
+
   dagreGraph.setGraph({ rankdir: direction });
 
   nodes.filter((node: any) => {
@@ -75,7 +88,6 @@ const getLayoutedElements = (nodes: any, edges: any, direction = 'LR') => {
 
   dagre.layout(dagreGraph);
 
-  const newNodes: any[] = [];
   nodes.filter((node: any) => {
     return node.type !== 'swimLaneNode';
   }).map((node: any) => {
@@ -86,16 +98,12 @@ const getLayoutedElements = (nodes: any, edges: any, direction = 'LR') => {
       sourcePosition: isHorizontal ? 'right' : 'bottom',
       position: {
         x: (nodeWithPosition.x - getNodeDimensions(node.type).width / 2) + 30, // offset the swim lane label height
-        y: (nodeWithPosition.y - getNodeDimensions(node.type).height / 2) / 2, // offset to center the swim lane
+        y: (getNodeDimensions(node.type).height / 2), // offset to center the swim lane
       },
     };
 
     newNodes.push(newNode);
   });
-
-  const swimLanesWidthHeight: any = {
-    width: 0
-  };
 
   newNodes.forEach(node => {
     if (node.parentId) {
@@ -134,7 +142,7 @@ const debounce = (callback: Function, wait: number) => {
   };
 }
 
-function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], initialEdges: any[] }) {
+const SwimLanesViewer: React.FC<{ initialNodes: any[], initialEdges: any[], isMock: boolean }> = ({ initialNodes, initialEdges, isMock }) => {
 
   const nodeTypes = {
     startNode: StartNode,
@@ -143,14 +151,18 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
     decisionNode: DecisionNode,
     endNode: EndNode
   }
-  const [data, setData] = useState<{ initialNodes: any[], initialEdges: any[] }>({ initialNodes: [], initialEdges: [] });
+  const [data, setData] = useState<{ initialNodes: any[], initialEdges: any[] }>({ initialNodes, initialEdges });
   const [toggleEditor, setToggleEditor] = useState<boolean>(false);
   const [instance, setInstance] = useState<ReactFlowInstance<Node, any> | null>(null);
+  const resizeHandler = debounce(() => {
+      instance?.fitView();
+    }, 100);
 
   useEffect(() => {
-    window.addEventListener('resize', debounce(() => {
-      instance?.fitView();
-    }, 100));
+    window.addEventListener('resize', resizeHandler);
+    return () => {
+      window.removeEventListener('resize', resizeHandler);
+    }
   }, [instance])
 
   useEffect(() => {
@@ -160,16 +172,8 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
     );
     setNodes(calculatedNodes.nodes);
     setEdges(calculatedNodes.edges);
+    setTimeout(() => instance?.fitView(),100)
   }, [data.initialEdges, data.initialNodes]);
-
-  useEffect(() => {
-    const calculatedNodes = getLayoutedElements(
-      initialNodes,
-      initialEdges,
-    );
-    setNodes(calculatedNodes.nodes);
-    setEdges(calculatedNodes.edges);
-  }, [initialEdges, initialNodes]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(data.initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(data.initialNodes);
@@ -241,12 +245,12 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
             }}>
               <ImageIcon />
             </ControlButton>
-            <Badge
+            {isMock ? <Badge
               className="h-5 mt-5 min-w-5 rounded-full px-2 font-mono tabular-nums"
               variant="outline"
             >
               Mock Data
-            </Badge>
+            </Badge> : <Badge className="h-5 mt-5 min-w-5 rounded-full px-2 font-mono tabular-nums border-purple-400 text-purple-400"><StarIcon />AI Generated</Badge>}
           </Controls>
         </ReactFlow>
       </div>
@@ -254,16 +258,16 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
         <JsonEditor
           theme={githubDarkTheme}
           data={{
-            nodes: initialNodes,
-            edges: initialEdges
+            nodes: data.initialNodes,
+            edges: data.initialEdges
           }}
           className='w-full h-1/2'
           maxWidth={'100vw'}
           collapse={2}
-          setData={(data: any) => {
+          setData={(updateddata: any) => {
             setData({
-              initialEdges: data.edges,
-              initialNodes: data.nodes
+              initialEdges: updateddata.edges,
+              initialNodes: updateddata.nodes
             });
           }}
         />
