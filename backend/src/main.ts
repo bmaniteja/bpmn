@@ -1,10 +1,10 @@
 import app from './app';
 import config from './config';
 import { createServer } from 'http';
-import { setupSocketHandlers } from './routes/Socket.route';
+import { initializeSocketRoutes } from './routes/Socket.route';
 
 const httpServer = createServer(app);
-setupSocketHandlers(httpServer);
+initializeSocketRoutes(httpServer);
 
 httpServer.listen(config.port, () => {
   console.log(`Server with Socket.io running on port ${config.port}`);

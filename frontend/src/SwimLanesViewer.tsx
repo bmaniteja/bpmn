@@ -2,9 +2,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dagre from '@dagrejs/dagre';
 import { toPng } from 'html-to-image';
-import { JsonEditor } from 'json-edit-react';
+import { JsonEditor, githubDarkTheme } from 'json-edit-react';
 import { CodeIcon, DownloadIcon, ImageIcon } from '@radix-ui/react-icons'
-import { ReactFlow, Controls, Background, type Node, useNodesState, useEdgesState, addEdge, ConnectionLineType, ControlButton } from '@xyflow/react';
+import { ReactFlow, Controls, Background, type Node, useNodesState, useEdgesState, addEdge, ConnectionLineType, ControlButton, type ReactFlowInstance } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
 
@@ -13,6 +13,7 @@ import ProcessNode from './nodes/Process';
 import SwimLaneNode from './nodes/SwimLane';
 import DecisionNode from './nodes/Decision';
 import EndNode from './nodes/End';
+import clsx from 'clsx';
 
 const getNodeDimensions = (type: string) => {
   let dimesions;
@@ -35,10 +36,10 @@ const getNodeDimensions = (type: string) => {
         height: 50
       };
       break;
-    case 'descisionNode':
+    case 'decisionNode':
       dimesions = {
-        width: 50,
-        height: 50
+        width: 70,
+        height: 70
       };
       break;
     case 'swimLaneNode':
@@ -125,11 +126,12 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
     startNode: StartNode,
     processNode: ProcessNode,
     swimLaneNode: SwimLaneNode,
-    descisionNode: DecisionNode,
+    decisionNode: DecisionNode,
     endNode: EndNode
   }
   const [data, setData] = useState<{ initialNodes: any[], initialEdges: any[] }>({ initialNodes: [], initialEdges: [] });
   const [toggleEditor, setToggleEditor] = useState<boolean>(false);
+  const [instance, setInstance] = useState<ReactFlowInstance<Node, any> | null>(null);
 
   useEffect(() => {
     const calculatedNodes = getLayoutedElements(
@@ -138,7 +140,7 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
     );
     setNodes(calculatedNodes.nodes);
     setEdges(calculatedNodes.edges);
-  }, [data.initialEdges, data.initialEdges]);
+  }, [data.initialEdges, data.initialNodes]);
 
   useEffect(() => {
     const calculatedNodes = getLayoutedElements(
@@ -160,9 +162,11 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
   );
 
   return (
-    <div>
-      <div style={{ height: '50vh', width: '100vw', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ height: '50vh', width: toggleEditor ? '50vw' :  '100vw' }}>
+      <div className='flex-col content-center h-dvh w-4/5'>
+        <div className={clsx({
+          'h-full w-full': !toggleEditor,
+          'h-1/2 w-full': toggleEditor
+        })}>
           <ReactFlow
             nodes={nodes as Node[]}
             onConnect={onConnect}
@@ -172,18 +176,29 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
             fitView
             colorMode='dark'
             nodeTypes={nodeTypes}
+            onInit={(inst) => { 
+              setInstance(inst);
+            }}
+            proOptions={{
+              hideAttribution: true
+            }}
           // nodesDraggable={false}
           >
             <Background />
             <Controls>
               <ControlButton onClick={() => {
                   setToggleEditor(!toggleEditor);
+                  setTimeout(() => {
+                    instance?.fitView();
+                  }, 300)
                 }}>
                 <CodeIcon/>
               </ControlButton>
               <ControlButton>
                 <DownloadIcon onClick={() => {
-                  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+                  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+                    nodes, edges
+                  }));
                   const a = document.createElement('a');
  
                   a.setAttribute('download', 'reactflow.json');
@@ -209,27 +224,26 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
             </Controls>
           </ReactFlow>
         </div>
-        {toggleEditor && <div style={{ maxHeight: '50vh', width:  '50vw', overflow: 'scroll' }}>
+        {toggleEditor && <div className='max-h-1/2 overflow-scroll'>
           <JsonEditor
+            theme={githubDarkTheme}
             data={{
-              initialEdges,
-              initialNodes
+              nodes: initialNodes,
+              edges: initialEdges
             }}
-            minWidth={'50vw'}
+            className='w-full h-1/2'
+            maxWidth={'100vw'}
             collapse={2}
             setData={(data: any) => {
               // debugger;
-              setData(data);
+              setData({
+                initialEdges: data.edges,
+                initialNodes: data.nodes
+              });
             }}
           />
         </div>}
       </div>
-      <div style={{ height: '50vh', width: '100vw', overflow: 'scroll' }}>
-        <textarea placeholder="Describe your business process or feature... 
-
-Example: 'Users can submit purchase orders which need approval from their manager. If the amount is over $5000, it also requires finance team approval before being processed.'"></textarea>
-      </div>
-    </div>
   );
 }
 

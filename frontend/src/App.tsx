@@ -1,12 +1,16 @@
 import './App.css'
 
 import SwimLanesViewer from './SwimLanesViewer'
-import { initialNodes, initialEdges } from './data'
+import { generatedEdges, genereatedNodes } from './data'
+import ProcessExtractor from './pages/ProcessExtractor'
 
 function App() {
   return (
     <>
-      <SwimLanesViewer initialNodes={initialNodes} initialEdges={initialEdges}/>
+      <div className='flex justify-center'>
+        <ProcessExtractor />
+        <SwimLanesViewer initialNodes={genereatedNodes} initialEdges={generatedEdges}/>
+      </div>
     </>
   )
 }

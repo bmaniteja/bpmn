@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-export default memo(({ data, ...rest }: { data: any, style: any, isConnectable: boolean }) => {
+export default memo(({ data, ...rest }: { data: any, isConnectable: boolean }) => {
   return (
     <>
       <div style={{

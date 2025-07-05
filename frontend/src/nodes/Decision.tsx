@@ -10,7 +10,7 @@ export default memo(({ data, isConnectable }: { data: any, isConnectable: boolea
         isConnectable={isConnectable}
         style={{
           zIndex: '1',
-          transform: 'translate(50%, -275%)'
+          transform: 'translate(5px, -20px)'
         }}
       />
         <div style={{
@@ -19,11 +19,10 @@ export default memo(({ data, isConnectable }: { data: any, isConnectable: boolea
           border: '1px solid transparent',
           borderRadius: '5px',
           background: 'black',
-          lineHeight: '50px',
           rotate: '45deg',
           transform: 'translate(0%, -50%)'
         }}>
-          <p style={{ rotate: '-45deg', height: '50px', width: '50px', transform: "translate(8px, -8px)", fontSize: '10px' }}>{data.label}</p>
+          <p style={{ rotate: '-45deg', height: '50px', width: '50px', fontSize: '10px' }}>{data.label}</p>
         </div>
       <Handle
         type="source"
@@ -31,7 +30,7 @@ export default memo(({ data, isConnectable }: { data: any, isConnectable: boolea
         isConnectable={isConnectable}
         style={{
           zIndex: '1',
-          transform: 'translate(400%, -275%)'
+          transform: 'translate(30px, -20px)'
         }}
       />
     </>

@@ -4,93 +4,41 @@ import BaseAgent, { AgentResult, AgentStatus, AgentContext, ValidationResult } f
 import { LLMProviderName } from '../providers/LLMProvider.interface';
 import { MessageType } from 'llamaindex';
 
-// Zod schemas for React-Flow compatible nested swimlane structure
-export const SwimlaneNodeSchema = z.object({
-  id: z.string(),
-  type: z.literal('swimlane'),
-  position: z.object({
-    x: z.number(),
-    y: z.number(),
-  }),
-  data: z.object({
-    label: z.string(), // Actor name
-    actor: z.string(),
-    color: z.string(),
-    childNodeIds: z.array(z.string()), // IDs of child nodes
-  }),
-  style: z.object({
-    width: z.number().optional(), // Will be auto-calculated by FE
-    height: z.number().optional(), // Will be auto-calculated by FE
-    backgroundColor: z.string(),
-    border: z.string().optional(),
-  }),
-});
-
 export const ProcessStepNodeSchema = z.object({
   id: z.string(),
-  type: z.enum(['start', 'action', 'decision', 'end']),
+  type: z.enum(['startNode', 'processNode', 'decisionNode', 'endNode', 'swimLaneNode']),
   position: z.object({
     x: z.number(), // Relative position within swimlane
     y: z.number(), // Relative position within swimlane
-  }),
-  parentId: z.string(), // Reference to swimlane node ID
-  extent: z.literal('parent'),
+  }).default({ x:0, y:0 }),
+  parentId: z.string().optional(), // Reference to swimlane node ID
+  extent: z.literal('parent').optional(),
   data: z.object({
-    label: z.string(),
-    stepType: z.enum(['start', 'action', 'decision', 'end']),
-    actor: z.string(),
-    conditions: z.array(z.object({
-      outcome: z.string(),
-      nextStep: z.string(),
-    })).optional(),
-  }),
-  style: z.object({
-    backgroundColor: z.string(),
-    border: z.string().optional(),
-    color: z.string().optional(),
-  }),
+    label: z.string()
+  }).optional()
 });
 
 export const ReactFlowEdgeSchema = z.object({
   id: z.string(),
   source: z.string(),
   target: z.string(),
-  type: z.enum(['default', 'smoothstep', 'step', 'simplebezier']).default('simplebezier'),
+  type: z.enum(['default', 'smoothstep', 'step', 'simplebezier']).default('smoothstep'),
   label: z.string().optional(),
-  style: z.object({
-    stroke: z.string().optional(),
-    strokeWidth: z.number().optional(),
-  }).optional(),
-  markerEnd: z.object({
-    type: z.string(),
-    color: z.string().optional(),
-  }).optional(),
+  animated: z.boolean()
 });
 
 export const ProcessDiagramSchema = z.object({
-  actors: z.array(z.string()),
-  swimlanes: z.array(SwimlaneNodeSchema), // Parent nodes
-  processSteps: z.array(ProcessStepNodeSchema), // Child nodes
+  nodes: z.array(ProcessStepNodeSchema),
   edges: z.array(ReactFlowEdgeSchema),
-  layoutConfig: z.object({
-    orientation: z.enum(['horizontal', 'vertical']).default('horizontal'),
-    swimlaneSpacing: z.number().default(50),
-    nodeSpacing: z.object({
-      x: z.number().default(150),
-      y: z.number().default(80),
-    }),
-    autoSize: z.boolean().default(true),
-  }),
   metadata: z.object({
     processName: z.string(),
     totalSteps: z.number(),
     complexity: z.enum(['low', 'medium', 'high']),
-    createdAt: z.string().datetime(),
+    createdAt: z.number(),
   }),
 });
 
 // Type exports for TypeScript
-export type SwimlaneNode = z.infer<typeof SwimlaneNodeSchema>;
 export type ProcessStepNode = z.infer<typeof ProcessStepNodeSchema>;
 export type ReactFlowEdge = z.infer<typeof ReactFlowEdgeSchema>;
 export type ProcessDiagramData = z.infer<typeof ProcessDiagramSchema>;
@@ -191,6 +139,7 @@ You communicate through structured data formats optimized for modern web-based d
       });
 
       // Parse and validate the response using Zod
+      console.log(response.response);
       const processData = this.parseAndValidateResponse(response.response);
       
       if (processData.isValid && processData.data) {
@@ -248,10 +197,10 @@ FEATURE DESCRIPTION:
 
 TASK: Convert this into a structured process with the following requirements:
 
-1. **Identify all actors** (roles, departments, systems) involved
+1. **Identify all actors (swimlane)** involved
 2. **Extract all process steps** and classify each as:
    - "start": Process initiation points
-   - "action": Tasks or activities  
+   - "process": Tasks or activities  
    - "decision": Choice points with multiple outcomes
    - "end": Process completion points
 
@@ -261,83 +210,140 @@ OUTPUT REQUIREMENTS:
 Respond with ONLY valid JSON in this exact format:
 
 {
-  "actors": ["Operations Admin", "Operator"],
-  "steps": [
-    {
-      "id": "start_1",
-      "type": "start",
-      "actor": "Operator",
-      "label": "Begin process",
-      "next": ["step_2"]
+  "nodes" : [
+  {
+    "id": "1",
+    "data": {
+      "label": "Operator"
     },
-    {
-      "id": "step_2", 
-      "type": "action",
-      "actor": "Operator",
-      "label": "Submit purchase order",
-      "next": ["step_3"]
+    "type": "swimLaneNode",
+    "position": {
+      "x": 0,
+      "y": 0
     },
-    {
-      "id": "step_3",
-      "type": "decision", 
-      "actor": "Operations Admin",
-      "label": "Review PO - requires escalation?",
-      "next": ["step_4", "step_5"],
-      "conditions": [
-        {"outcome": "escalate", "nextStep": "step_4"},
-        {"outcome": "no_escalation", "nextStep": "step_5"}
-      ]
-    },
-    {
-      "id": "step_4",
-      "type": "action",
-      "actor": "Operations Admin", 
-      "label": "Escalate purchase order",
-      "next": ["step_5"]
-    },
-    {
-      "id": "step_5",
-      "type": "decision",
-      "actor": "Operations Admin",
-      "label": "Approve or reject PO?", 
-      "next": ["step_6", "step_7"],
-      "conditions": [
-        {"outcome": "approve", "nextStep": "step_6"},
-        {"outcome": "reject", "nextStep": "step_7"}
-      ]
-    },
-    {
-      "id": "step_6",
-      "type": "action",
-      "actor": "Operations Admin",
-      "label": "Approve purchase order",
-      "next": ["end_1"]
-    },
-    {
-      "id": "step_7", 
-      "type": "action",
-      "actor": "Operations Admin",
-      "label": "Reject purchase order",
-      "next": ["step_8"]
-    },
-    {
-      "id": "step_8",
-      "type": "action", 
-      "actor": "Operator",
-      "label": "Edit and resubmit PO",
-      "next": ["step_3"]
-    },
-    {
-      "id": "end_1",
-      "type": "end",
-      "actor": "Operations Admin", 
-      "label": "Process complete",
-      "next": []
+    "style": {
+      "width": 720,
+      "height": 100
     }
-  ],
+  },
+  {
+    "id": "2",
+    "data": {
+      "label": "Start"
+    },
+    "parentId": "1",
+    "extent": "parent",
+    "type": "startNode"
+  },
+  {
+    "id": "3",
+    "data": {
+      "label": "Create PO"
+    },
+    "parentId": "1",
+    "extent": "parent",
+    "type": "processNode"
+  },
+  {
+    "id": "4",
+    "data": {
+      "label": "Operations Admin"
+    },
+    "type": "swimLaneNode",
+    "position": {
+      "x": 0,
+      "y": 102
+    },
+    "style": {
+      "width": 720,
+      "height": 100
+    }
+  },
+  {
+    "id": "5",
+    "data": {
+      "label": "Review"
+    },
+    "parentId": "4",
+    "extent": "parent",
+    "type": "processNode"
+  },
+  {
+    "id": "6",
+    "data": {
+      "label": "Approve"
+    },
+    "parentId": "4",
+    "extent": "parent",
+    "type": "decisionNode"
+  },
+  {
+    "id": "7",
+    "data": {
+      "label": "Re-submit PO"
+    },
+    "parentId": "1",
+    "extent": "parent",
+    "type": "processNode"
+  },
+  {
+    "id": "8",
+    "parentId": "4",
+    "extent": "parent",
+    "type": "endNode"
+  }
+],
+"edges": [
+  {
+    "id": "2-3",
+    "source": "2",
+    "target": "3",
+    "type": "smoothstep",
+    "animated": true
+  },
+  {
+    "id": "5-6",
+    "source": "5",
+    "target": "6",
+    "type": "smoothstep",
+    "animated": true
+  },
+  {
+    "id": "3-5",
+    "source": "3",
+    "target": "5",
+    "label": "review",
+    "type": "smoothstep",
+    "animated": true
+  },
+  {
+    "id": "6-7",
+    "source": "6",
+    "target": "7",
+    "label": "reject",
+    "type": "smoothstep",
+    "animated": true
+  },
+  {
+    "id": "6-8",
+    "source": "6",
+    "target": "8",
+    "label": "approve",
+    "type": "smoothstep",
+    "animated": true
+  },
+  {
+    "id": "7-5",
+    "source": "7",
+    "target": "5",
+    "label": "re-submit",
+    "type": "smoothstep",
+    "animated": true
+  }
+]
   "metadata": {
     "processName": "Purchase Order Review Process",
-    "totalSteps": 8,
+    "totalSteps": 6,
     "complexity": "medium"
   }
 }
@@ -375,7 +381,7 @@ Generate the process JSON now:`;
       const parsedData = JSON.parse(jsonMatch[0]);
       
       // Basic structure validation before conversion
-      if (!parsedData.actors || !parsedData.steps || !parsedData.metadata) {
+      if (!parsedData.nodes || !parsedData.edges || !parsedData.metadata) {
         return {
           isValid: false,
           errors: ['Missing required fields: actors, steps, or metadata']
@@ -399,154 +405,15 @@ Generate the process JSON now:`;
    * Convert raw process data to nested React-Flow compatible format
    */
   private convertToReactFlowFormat(rawData: any): ProcessDiagramData {
-    const actors = rawData.actors as string[];
-    const swimlanes: SwimlaneNode[] = [];
-    const processSteps: ProcessStepNode[] = [];
-    const edges: ReactFlowEdge[] = [];
-
-    // Create swimlane parent nodes
-    actors.forEach((actor, index) => {
-      const swimlaneId = `swimlane-${actor.toLowerCase().replace(/\s+/g, '-')}`;
-      
-      swimlanes.push({
-        id: swimlaneId,
-        type: 'swimlane',
-        position: { x: 0, y: 0 }, // Frontend will calculate based on layout
-        data: {
-          label: actor,
-          actor: actor,
-          color: this.actorColors[index % this.actorColors.length],
-          childNodeIds: [], // Will be populated below
-        },
-        style: {
-          backgroundColor: `${this.actorColors[index % this.actorColors.length]}15`, // 15% opacity
-          border: `2px solid ${this.actorColors[index % this.actorColors.length]}`,
-        },
-      });
-    });
-
-    // Create process step child nodes and organize by swimlane
-    const swimlaneStepMap: { [swimlaneId: string]: string[] } = {};
-    
-    rawData.steps.forEach((step: any, index: number) => {
-      const swimlaneId = `swimlane-${step.actor.toLowerCase().replace(/\s+/g, '-')}`;
-      
-      // Initialize array if first step for this swimlane
-      if (!swimlaneStepMap[swimlaneId]) {
-        swimlaneStepMap[swimlaneId] = [];
-      }
-      
-      // Calculate relative position within swimlane (frontend will use this as base)
-      const stepsInLane = swimlaneStepMap[swimlaneId].length;
-      const relativePosition = {
-        x: 20, // Small padding from swimlane edge
-        y: 20 + (stepsInLane * 100), // Vertical spacing between steps
-      };
-
-      const processStepNode: ProcessStepNode = {
-        id: step.id,
-        type: step.type,
-        position: relativePosition,
-        parentId: swimlaneId,
-        extent: 'parent',
-        data: {
-          label: step.label,
-          stepType: step.type,
-          actor: step.actor,
-          conditions: step.conditions,
-        },
-        style: {
-          backgroundColor: this.getNodeColor(step.type),
-          border: '2px solid #333',
-          color: '#333',
-        },
-      };
-
-      processSteps.push(processStepNode);
-      swimlaneStepMap[swimlaneId].push(step.id);
-
-      // Create edges for connections
-      if (step.next && Array.isArray(step.next)) {
-        step.next.forEach((nextStepId: string, edgeIndex: number) => {
-          const edge: ReactFlowEdge = {
-            id: `${step.id}-${nextStepId}`,
-            source: step.id,
-            target: nextStepId,
-            type: 'simplebezier',
-            style: {
-              stroke: '#666',
-              strokeWidth: 2,
-            },
-            markerEnd: {
-              type: 'arrowclosed',
-              color: '#666',
-            },
-          };
-
-          // Add label for decision outcomes
-          if (step.type === 'decision' && step.conditions) {
-            const condition = step.conditions[edgeIndex];
-            if (condition) {
-              edge.label = condition.outcome;
-            }
-          }
-
-          edges.push(edge);
-        });
-      }
-    });
-
-    // Update swimlanes with their child node IDs
-    swimlanes.forEach(swimlane => {
-      const childIds = swimlaneStepMap[swimlane.id] || [];
-      swimlane.data.childNodeIds = childIds;
-    });
-
-    // Create the process diagram data
-    const processData: ProcessDiagramData = {
-      actors,
-      swimlanes,
-      processSteps,
-      edges,
-      layoutConfig: {
-        orientation: 'horizontal', // Default to horizontal
-        swimlaneSpacing: 50,
-        nodeSpacing: {
-          x: 150,
-          y: 80,
-        },
-        autoSize: true,
-      },
-      metadata: {
-        processName: rawData.metadata.processName,
-        totalSteps: rawData.metadata.totalSteps,
-        complexity: rawData.metadata.complexity,
-        createdAt: new Date().toISOString(),
-      },
-    };
-
+    rawData.metadata.createdAt = Date.now();
     // Validate with Zod schema
-    const validationResult = ProcessDiagramSchema.safeParse(processData);
-    
+    const validationResult = ProcessDiagramSchema.safeParse(rawData);
     if (!validationResult.success) {
       console.error('Zod validation failed:', validationResult.error);
       throw new Error(`Schema validation failed: ${validationResult.error.message}`);
     }
 
     return validationResult.data;
-  }
-
-  /**
-   * Get node color based on step type
-   */
-  private getNodeColor(stepType: string): string {
-    const colors = {
-      start: '#90EE90',    // Light green
-      action: '#87CEEB',   // Sky blue  
-      decision: '#FFD700', // Gold
-      end: '#FFA07A',      // Light salmon
-    };
-    return colors[stepType as keyof typeof colors] || '#E0E0E0';
   }
 
   /**

@@ -18,12 +18,13 @@ export function initializeSocketRoutes(httpServer: HttpServer) {
     console.log(`Socket connected: ${socket.id}`);
 
     // Test process extraction
-    socket.on('process:extract', async (data: { featureDescription: string }) => {
+    socket.on('process:extract', async (data: { sessionId:string, featureDescription: string }) => {
+      console.log(data)
       try {
         console.log(`Processing extraction for socket ${socket.id}`);
         
         // Use socket.id as sessionId for simplicity
-        const sessionId = socket.id;
+        const sessionId = data.sessionId;
         
         // Call the agent's processMessage method which handles streaming
         await processAgent.processMessage(sessionId, data.featureDescription, socket);

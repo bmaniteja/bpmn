@@ -12,8 +12,12 @@
   "dependencies": {
     "@dagrejs/dagre": "^1.1.5",
     "@radix-ui/react-icons": "^1.3.2",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@tailwindcss/vite": "^4.1.11",
     "@xyflow/react": "^12.8.1",
     "bpmn-js": "^18.6.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "dagrejs": "^0.2.1",
     "html-to-image": "1.11.11",
     "json-edit-react": "^1.27.2",
@@ -21,6 +25,9 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.11",
+    "tw-animate-css": "^1.3.5",
     "zod": "^3.25.71"
   },
   "devDependencies": {
