@@ -5,9 +5,8 @@ import { io, Socket } from 'socket.io-client';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { MagicWandIcon, CheckCircledIcon } from '@radix-ui/react-icons';
-import { Loader2Icon, type LucideProps } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import { Alert } from '@/components/ui/alert';
-import type { IconProps } from '@radix-ui/react-icons/dist/types';
 interface ProcessExtractionPageProps {
   socketUrl?: string;
   className?: string;
@@ -77,7 +76,7 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
         status: status.status as any,
         action: status.action,
         loading: status.status !== 'complete' && status.status !== 'error',
-        Icon: () => "🤔"
+        Icon: () => <Loader2Icon className="animate-spin" />
       }));
     });
     socket.on('agent:error', (error: { message: string; timestamp: string }) => {

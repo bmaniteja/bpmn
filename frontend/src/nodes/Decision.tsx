@@ -21,8 +21,8 @@ export default memo(({ data, isConnectable }: { data: any, isConnectable: boolea
           background: 'black',
           rotate: '45deg',
           transform: 'translate(0%, -30%)'
-        }}>
-          <p style={{ rotate: '-45deg', transform:'translate(-25%, 50%)', fontSize: '10px' }}>{data.label}</p>
+        }} className='flex justify-center items-center'>
+          <p style={{ rotate: '-45deg', fontSize: '10px' }}>{data.label}</p>
         </div>
       <Handle
         type="source"

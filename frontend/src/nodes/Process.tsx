@@ -15,8 +15,7 @@ export default memo(({ data, isConnectable }: { data: any, isConnectable: boolea
         border: '1px solid transparent',
         borderRadius: '5px',
         background: 'black',
-        lineHeight: '50px'
-      }}>
+      }} className='flex justify-center items-center'>
         <p style={{
           fontSize:"10px",
           margin: '0px'

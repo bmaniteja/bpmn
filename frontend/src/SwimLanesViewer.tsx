@@ -58,7 +58,7 @@ const getNodeDimensions = (type: string) => {
   return dimesions;
 }
 
-const getLayoutedElements = (nodes: any, edges: any, direction = 'LR') => {
+const getLayoutedElements = (nodes: any[] = [], edges: any[] = [], direction = 'LR') => {
   const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   const isHorizontal = direction === 'LR';
   const newNodes: any[] = [];
@@ -174,6 +174,12 @@ const SwimLanesViewer: React.FC<{ initialNodes: any[], initialEdges: any[], isMo
     setEdges(calculatedNodes.edges);
     setTimeout(() => instance?.fitView(),100)
   }, [data.initialEdges, data.initialNodes]);
+
+  useEffect(() => {
+    setData({
+      initialEdges, initialNodes
+    })
+  }, [initialEdges, initialNodes]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(data.initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(data.initialNodes);

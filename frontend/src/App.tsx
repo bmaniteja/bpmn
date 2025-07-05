@@ -8,10 +8,18 @@ import ProcessExtractor from './pages/ProcessExtractor'
 function App() {
 
   const [data, setData] = useState<any>({
-    initialNodes: genereatedNodes,
-    initialEdges: generatedEdges,
+    initialNodes: [],
+    initialEdges: [],
     isMock: true
   });
+
+  useEffect(() => {
+    setData({
+      initialNodes: genereatedNodes,
+      initialEdges: generatedEdges,
+      isMock: true
+    })
+  }, []);
 
   return (
     <>
