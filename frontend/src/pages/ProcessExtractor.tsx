@@ -4,17 +4,21 @@ import { io, Socket } from 'socket.io-client';
 
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import {MagicWandIcon, DiscIcon } from '@radix-ui/react-icons'
+import { MagicWandIcon, CheckCircledIcon } from '@radix-ui/react-icons';
+import { Loader2Icon, type LucideProps } from "lucide-react";
+import { Alert } from '@/components/ui/alert';
+import type { IconProps } from '@radix-ui/react-icons/dist/types';
 interface ProcessExtractionPageProps {
   socketUrl?: string;
   className?: string;
 }
 
 interface ExtractionState {
-  status: 'connected' | 'idle' | 'thinking' | 'extracting' | 'validating' | 'complete' | 'error';
+  status: 'connecting' | 'idle' | 'thinking' | 'extracting' | 'validating' | 'complete' | 'error';
   action?: string;
   loading: boolean;
   error: string | null;
+  Icon?: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<SVGSVGElement>> | React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>
 }
 
 const palceHolder = `Describe your business process or feature... 
@@ -26,9 +30,11 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
   className = '',
 }) => {
   const [extractionState, setExtractionState] = useState<ExtractionState>({
-    status: 'idle',
+    status: 'connecting',
     loading: false,
     error: null,
+    action: 'Connecting',
+    Icon: () => <Loader2Icon className="animate-spin" />
   });
   const socketRef = useRef<Socket | null>(null);
   const sessionId = useRef<string>(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
@@ -50,7 +56,16 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
 
   const setupSocketListeners = () => {
     if (!socketRef.current) return;
-
+    // simulate some delay
+    setTimeout(() => {
+      setExtractionState({
+      status: 'idle',
+      loading: false,
+      error: null,
+      action: 'Conencted & Waiting',
+      Icon: () => <CheckCircledIcon />
+    })
+    }, 1000)
     const socket = socketRef.current;
     socket.on('process:extracted', (data) => { console.log(data); });
   };
@@ -66,10 +81,13 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
   }
 
   return (<>
-    <div className={clsx(className, 'w-1/5 p-4')}>
+    <div className={clsx(className, 'p-4 lg:flex-1/4 flex flex-col')}>
+      <Alert className='items-center content-center mb-5'>
+        {extractionState.Icon && <extractionState.Icon />}{`${extractionState.action}`}
+      </Alert>
       <Textarea className='mb-4' placeholder={palceHolder}></Textarea>
-      <Button variant={'outline'} onClick={() => { }} className='mr-2 cursor-pointer hover:text-black hover:bg-white'> <DiscIcon /> Load Mock</Button>
-      <Button variant={'outline'} onClick={() => { }} className='cursor-pointer hover:text-black hover:bg-white'> <MagicWandIcon /> Generate</Button>
+      {/* <Button variant={'outline'} onClick={() => { }} className='mr-2 cursor-pointer hover:text-black hover:bg-white'> <DiscIcon /> Load Mock</Button> */}
+      <Button disabled={extractionState.status === 'connecting'} variant={'outline'} onClick={() => { }} className='cursor-pointer hover:text-black hover:bg-white'> <MagicWandIcon /> Generate</Button>
     </div>
   </>);
 }

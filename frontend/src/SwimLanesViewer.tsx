@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import dagre from '@dagrejs/dagre';
 import { toPng } from 'html-to-image';
 import { JsonEditor, githubDarkTheme } from 'json-edit-react';
@@ -14,6 +14,7 @@ import SwimLaneNode from './nodes/SwimLane';
 import DecisionNode from './nodes/Decision';
 import EndNode from './nodes/End';
 import clsx from 'clsx';
+import { Badge } from './components/ui/badge';
 
 const getNodeDimensions = (type: string) => {
   let dimesions;
@@ -120,6 +121,19 @@ const getLayoutedElements = (nodes: any, edges: any, direction = 'LR') => {
   return { nodes: [...newLanes, ...newNodes], edges };
 };
 
+const debounce = (callback: Function, wait: number) => {
+  let timeoutId: number | null = null;
+  // @ts-expect-error
+  return (...args) => {
+    if (timeoutId) {
+      window.clearTimeout(timeoutId);
+    }
+    timeoutId = window.setTimeout(() => {
+      callback(...args);
+    }, wait);
+  };
+}
+
 function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], initialEdges: any[] }) {
 
   const nodeTypes = {
@@ -132,6 +146,12 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
   const [data, setData] = useState<{ initialNodes: any[], initialEdges: any[] }>({ initialNodes: [], initialEdges: [] });
   const [toggleEditor, setToggleEditor] = useState<boolean>(false);
   const [instance, setInstance] = useState<ReactFlowInstance<Node, any> | null>(null);
+
+  useEffect(() => {
+    window.addEventListener('resize', debounce(() => {
+      instance?.fitView();
+    }, 100));
+  }, [instance])
 
   useEffect(() => {
     const calculatedNodes = getLayoutedElements(
@@ -149,7 +169,7 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
     );
     setNodes(calculatedNodes.nodes);
     setEdges(calculatedNodes.edges);
-  }, []);
+  }, [initialEdges, initialNodes]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(data.initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(data.initialNodes);
@@ -162,88 +182,93 @@ function SwimLanesViewer({ initialNodes, initialEdges }: { initialNodes: any[], 
   );
 
   return (
-      <div className='flex-col content-center h-dvh w-4/5'>
-        <div className={clsx({
-          'h-full w-full': !toggleEditor,
-          'h-1/2 w-full': toggleEditor
-        })}>
-          <ReactFlow
-            nodes={nodes as Node[]}
-            onConnect={onConnect}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            fitView
-            colorMode='dark'
-            nodeTypes={nodeTypes}
-            onInit={(inst) => { 
-              setInstance(inst);
-            }}
-            proOptions={{
-              hideAttribution: true
-            }}
-          // nodesDraggable={false}
-          >
-            <Background />
-            <Controls>
-              <ControlButton onClick={() => {
-                  setToggleEditor(!toggleEditor);
-                  setTimeout(() => {
-                    instance?.fitView();
-                  }, 300)
-                }}>
-                <CodeIcon/>
-              </ControlButton>
-              <ControlButton>
-                <DownloadIcon onClick={() => {
-                  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
-                    nodes, edges
-                  }));
-                  const a = document.createElement('a');
- 
-                  a.setAttribute('download', 'reactflow.json');
-                  a.setAttribute('href', dataStr);
-                  a.click();
-                }} />
-              </ControlButton>
-              <ControlButton onClick={() => {
-                const reactFlowElement = document.querySelector('.react-flow__viewport');
-                if (reactFlowElement) {
-                  toPng(reactFlowElement as HTMLElement, {
+    <div className='flex-col content-center h-dvh flex-1 lg:flex-3/4'>
+      <div className={clsx({
+        'h-full w-full': !toggleEditor,
+        'h-1/2 w-full': toggleEditor
+      })}>
+        <ReactFlow
+          nodes={nodes as Node[]}
+          onConnect={onConnect}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          fitView
+          colorMode='dark'
+          nodeTypes={nodeTypes}
+          onInit={(inst) => {
+            setInstance(inst);
+          }}
+          proOptions={{
+            hideAttribution: true
+          }}
+        // nodesDraggable={false}
+        >
+          <Background />
+          <Controls>
+            <ControlButton onClick={() => {
+              setToggleEditor(!toggleEditor);
+              setTimeout(() => {
+                instance?.fitView();
+              }, 10)
+            }}>
+              <CodeIcon />
+            </ControlButton>
+            <ControlButton>
+              <DownloadIcon onClick={() => {
+                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+                  nodes, edges
+                }));
+                const a = document.createElement('a');
+
+                a.setAttribute('download', 'reactflow.json');
+                a.setAttribute('href', dataStr);
+                a.click();
+              }} />
+            </ControlButton>
+            <ControlButton onClick={() => {
+              const reactFlowElement = document.querySelector('.react-flow__viewport');
+              if (reactFlowElement) {
+                toPng(reactFlowElement as HTMLElement, {
                 }).then((imageData) => {
                   const a = document.createElement('a');
- 
+
                   a.setAttribute('download', 'reactflow.png');
                   a.setAttribute('href', imageData);
                   a.click();
                 });
-                }
-              }}>
-                <ImageIcon />
-              </ControlButton>
-            </Controls>
-          </ReactFlow>
-        </div>
-        {toggleEditor && <div className='max-h-1/2 overflow-scroll'>
-          <JsonEditor
-            theme={githubDarkTheme}
-            data={{
-              nodes: initialNodes,
-              edges: initialEdges
-            }}
-            className='w-full h-1/2'
-            maxWidth={'100vw'}
-            collapse={2}
-            setData={(data: any) => {
-              // debugger;
-              setData({
-                initialEdges: data.edges,
-                initialNodes: data.nodes
-              });
-            }}
-          />
-        </div>}
+              }
+            }}>
+              <ImageIcon />
+            </ControlButton>
+            <Badge
+              className="h-5 mt-5 min-w-5 rounded-full px-2 font-mono tabular-nums"
+              variant="outline"
+            >
+              Mock Data
+            </Badge>
+          </Controls>
+        </ReactFlow>
       </div>
+      {toggleEditor && <div className='max-h-1/2 overflow-scroll'>
+        <JsonEditor
+          theme={githubDarkTheme}
+          data={{
+            nodes: initialNodes,
+            edges: initialEdges
+          }}
+          className='w-full h-1/2'
+          maxWidth={'100vw'}
+          collapse={2}
+          setData={(data: any) => {
+            setData({
+              initialEdges: data.edges,
+              initialNodes: data.nodes
+            });
+          }}
+        />
+      </div>}
+    </div>
   );
 }
 
