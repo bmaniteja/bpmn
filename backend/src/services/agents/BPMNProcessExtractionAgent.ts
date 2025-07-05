@@ -6,89 +6,89 @@ import { MessageType } from 'llamaindex';
 
 // BPMN-compatible Zod schemas
 export const BPMNElementSchema = z.object({
-    id: z.string(),
-    type: z.enum([
-        'bpmn:StartEvent',
-        'bpmn:Task',
-        'bpmn:UserTask',
-        'bpmn:ServiceTask',
-        'bpmn:ExclusiveGateway',
-        'bpmn:ParallelGateway',
-        'bpmn:EndEvent'
-    ]),
-    name: z.string(),
-    documentation: z.string().optional(),
-    // Swimlane assignment
-    lane: z.string().optional(),
-    participant: z.string(),
-    // Position for layout
-    bounds: z.object({
-        x: z.number(),
-        y: z.number(),
-        width: z.number(),
-        height: z.number(),
-    }),
-    // Gateway-specific properties
-    gatewayDirection: z.enum(['Diverging', 'Converging', 'Mixed']).optional(),
+  id: z.string(),
+  type: z.enum([
+    'bpmn:StartEvent',
+    'bpmn:Task',
+    'bpmn:UserTask',
+    'bpmn:ServiceTask',
+    'bpmn:ExclusiveGateway',
+    'bpmn:ParallelGateway',
+    'bpmn:EndEvent'
+  ]),
+  name: z.string(),
+  documentation: z.string().optional(),
+  // Swimlane assignment
+  lane: z.string().optional(),
+  participant: z.string(),
+  // Position for layout
+  bounds: z.object({
+    x: z.number(),
+    y: z.number(),
+    width: z.number(),
+    height: z.number(),
+  }),
+  // Gateway-specific properties
+  gatewayDirection: z.enum(['Diverging', 'Converging', 'Mixed']).optional(),
 });
 
 export const BPMNSequenceFlowSchema = z.object({
-    id: z.string(),
-    sourceRef: z.string(),
-    targetRef: z.string(),
-    name: z.string().optional(), // For gateway conditions
-    conditionExpression: z.string().optional(),
-    isDefault: z.boolean().optional(),
-    waypoints: z.array(z.object({
-        x: z.number(),
-        y: z.number(),
-    })).optional(),
+  id: z.string(),
+  sourceRef: z.string(),
+  targetRef: z.string(),
+  name: z.string().optional(), // For gateway conditions
+  conditionExpression: z.string().optional(),
+  isDefault: z.boolean().optional(),
+  waypoints: z.array(z.object({
+    x: z.number(),
+    y: z.number(),
+  })).optional(),
 });
 
 export const BPMNLaneSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    participantRef: z.string(),
-    flowNodeRefs: z.array(z.string()), // Elements in this lane
-    bounds: z.object({
-        x: z.number(),
-        y: z.number(),
-        width: z.number(),
-        height: z.number(),
-    }),
+  id: z.string(),
+  name: z.string(),
+  participantRef: z.string(),
+  flowNodeRefs: z.array(z.string()), // Elements in this lane
+  bounds: z.object({
+    x: z.number(),
+    y: z.number(),
+    width: z.number(),
+    height: z.number(),
+  }),
 });
 
 export const BPMNParticipantSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    processRef: z.string(),
-    bounds: z.object({
-        x: z.number(),
-        y: z.number(),
-        width: z.number(),
-        height: z.number(),
-    }),
+  id: z.string(),
+  name: z.string(),
+  processRef: z.string(),
+  bounds: z.object({
+    x: z.number(),
+    y: z.number(),
+    width: z.number(),
+    height: z.number(),
+  }),
 });
 
 export const BPMNProcessSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    isExecutable: z.boolean().default(false),
-    elements: z.array(BPMNElementSchema),
-    sequenceFlows: z.array(BPMNSequenceFlowSchema),
+  id: z.string(),
+  name: z.string(),
+  isExecutable: z.boolean().default(false),
+  elements: z.array(BPMNElementSchema),
+  sequenceFlows: z.array(BPMNSequenceFlowSchema),
 });
 
 export const BPMNDiagramSchema = z.object({
-    processes: z.array(BPMNProcessSchema),
-    participants: z.array(BPMNParticipantSchema),
-    lanes: z.array(BPMNLaneSchema).optional(),
-    metadata: z.object({
-        processName: z.string(),
-        totalElements: z.number(),
-        complexity: z.enum(['low', 'medium', 'high']),
-        createdAt: z.string().datetime(),
-        bpmnVersion: z.string().default('2.0'),
-    }),
+  processes: z.array(BPMNProcessSchema),
+  participants: z.array(BPMNParticipantSchema),
+  lanes: z.array(BPMNLaneSchema).optional(),
+  metadata: z.object({
+    processName: z.string(),
+    totalElements: z.number(),
+    complexity: z.enum(['low', 'medium', 'high']),
+    createdAt: z.string().datetime(),
+    bpmnVersion: z.string().default('2.0'),
+  }),
 });
 
 // Type exports
@@ -100,32 +100,32 @@ export type BPMNProcess = z.infer<typeof BPMNProcessSchema>;
 export type BPMNDiagramData = z.infer<typeof BPMNDiagramSchema>;
 
 export interface BPMNExtractionResult extends AgentResult {
-    bpmnData?: BPMNDiagramData;
-    bpmnXML?: string;
-    isValid: boolean;
-    validationErrors?: string[];
+  bpmnData?: BPMNDiagramData;
+  bpmnXML?: string;
+  isValid: boolean;
+  validationErrors?: string[];
 }
 
 export class BPMNProcessExtractionAgent extends BaseAgent {
-    private readonly participantColors = [
-        '#E3F2FD', '#F3E5F5', '#E8F5E8', '#FFF3E0', '#FCE4EC',
-        '#E0F2F1', '#F1F8E9', '#FFF8E1', '#EFEBE9', '#FAFAFA'
-    ];
+  private readonly participantColors = [
+    '#E3F2FD', '#F3E5F5', '#E8F5E8', '#FFF3E0', '#FCE4EC',
+    '#E0F2F1', '#F1F8E9', '#FFF8E1', '#EFEBE9', '#FAFAFA'
+  ];
 
-    constructor() {
-        const config = {
-            provider: (process.env.MODEL_PROVIDER as LLMProviderName) || LLMProviderName.OPENAI,
-            streaming: true,
-            contextPersistence: true,
-            maxTokens: 4000,
-            temperature: 0.1, // Very low for consistent BPMN structure
-        };
+  constructor() {
+    const config = {
+      provider: (process.env.MODEL_PROVIDER as LLMProviderName) || LLMProviderName.OPENAI,
+      streaming: true,
+      contextPersistence: true,
+      maxTokens: 4000,
+      temperature: 0.1, // Very low for consistent BPMN structure
+    };
 
-        super(config);
-    }
+    super(config);
+  }
 
-    getSystemPrompt(): string {
-        return `You are an expert BPMN (Business Process Model and Notation) analyst with deep expertise in business process modeling and swimlane diagrams.
+  getSystemPrompt(): string {
+    return `You are an expert BPMN (Business Process Model and Notation) analyst with deep expertise in business process modeling and swimlane diagrams.
 
 Your core competencies include:
 - **BPMN 2.0 Standards**: Deep understanding of BPMN elements, symbols, and notation rules
@@ -150,85 +150,69 @@ You convert feature descriptions into valid BPMN-compliant process models that c
 - Comprehensive process coverage from start to end
 
 Your output is structured data optimized for BPMN visualization tools and follows BPMN 2.0 standards.`;
-    }
+  }
 
-    async processMessage(sessionId: string, message: string, socket: Socket): Promise<void> {
-        try {
-            this.emitStatus(socket, {
-                status: "thinking",
-                action: "Analyzing feature for BPMN extraction..."
-            });
+  async processMessage(sessionId: string, message: string, socket: Socket): Promise<void> {
+    try {
+      this.emitStatus(socket, {
+        status: "thinking",
+        action: "Analyzing feature for BPMN extraction..."
+      });
 
-            const context = this.getOrCreateContext(sessionId);
+      const context = this.getOrCreateContext(sessionId);
 
-            if (!this.chatEngine) {
-                await this.initializeChatEngine(sessionId);
-            }
+      if (!this.chatEngine) {
+        await this.initializeChatEngine(sessionId);
+      }
 
-            const extractionPrompt = this.buildBPMNExtractionPrompt(message);
+      const extractionPrompt = this.buildBPMNExtractionPrompt(message);
 
-            this.emitStatus(socket, {
-                status: "extracting",
-                action: "Extracting BPMN process structure..."
-            });
+      this.emitStatus(socket, {
+        status: "extracting",
+        action: "Extracting BPMN process structure..."
+      });
 
-            const response = await this.chatEngine!.chat({
-                message: extractionPrompt,
-                chatHistory: [],
-                stream: false,
-            });
+      const response = await this.chatEngine!.chat({
+        message: extractionPrompt,
+        chatHistory: [],
+        stream: false,
+      });
 
-            this.emitStatus(socket, {
-                status: "validating",
-                action: "Validating BPMN structure..."
-            });
+      this.emitStatus(socket, {
+        status: "validating",
+        action: "Validating BPMN structure..."
+      });
 
-            const processData = this.parseAndValidateBPMNResponse(response.response);
+      const processData = response.response;
+      context.messages.push({
+        content: message,
+        role: "user" as MessageType,
+      });
+      context.messages.push({
+        content: `Extracted BPMN process`,
+        role: "assistant" as MessageType,
+      });
 
-            if (processData.isValid && processData.data) {
-                const bpmnData = this.convertToBPMNFormat(processData.data);
-                const bpmnXML = this.generateBPMNXML(bpmnData);
-
-                context.messages.push({
-                    content: message,
-                    role: "user" as MessageType,
-                });
-                context.messages.push({
-                    content: `Extracted BPMN process: ${bpmnData.metadata.processName}`,
-                    role: "assistant" as MessageType,
-                });
-
-                socket.emit('bpmn:extracted', {
-                    bpmnData,
-                    bpmnXML,
-                    metadata: {
-                        sessionId,
-                        extractedAt: new Date().toISOString(),
-                        featureDescription: message,
-                    }
-                });
-
-                this.emitStatus(socket, { status: "complete" });
-            } else {
-                socket.emit('bpmn:validation-error', {
-                    errors: processData.errors,
-                    rawResponse: response.response.substring(0, 500) + '...',
-                });
-
-                this.emitStatus(socket, {
-                    status: "error",
-                    action: "BPMN extraction failed validation"
-                });
-            }
-
-        } catch (error) {
-            console.error('BPMN extraction error:', error);
-            this.emitError(socket, error as Error);
+      socket.emit('bpmn:extracted', {
+        bpmnXML: processData,
+        metadata: {
+          sessionId,
+          extractedAt: new Date().toISOString(),
+          featureDescription: message,
         }
-    }
+      });
 
-    private buildBPMNExtractionPrompt(featureDescription: string): string {
-        return `Analyze the following feature description and extract a complete BPMN process model.
+      this.emitStatus(socket, { status: "complete" });
+
+
+    } catch (error) {
+      console.error('BPMN extraction error:', error);
+      this.emitError(socket, error as Error);
+    }
+  }
+
+  private buildBPMNExtractionPrompt(featureDescription: string): string {
+    return `Analyze the following feature description and extract a complete BPMN process model.
 
 FEATURE DESCRIPTION:
 "${featureDescription}"
@@ -249,107 +233,214 @@ TASK: Convert this into a structured BPMN process with the following requirement
 4. **Assign elements to correct participants** based on who performs each activity
 
 OUTPUT REQUIREMENTS:
-Respond with ONLY valid JSON in this exact format:
+Respond with ONLY valid XML in this exact example format generated with this prompt As an Operations Admin, I want to review purchase orders submitted by operators, escalate them if required, and either approve or reject them based on policy. Operators can edit and resubmit rejected POs:
 
-{
-  "participants": [
-    {"name": "Operations Admin", "id": "participant_ops"},
-    {"name": "Operator", "id": "participant_operator"}
-  ],
-  "elements": [
-    {
-      "id": "start_1",
-      "type": "bpmn:StartEvent",
-      "name": "Purchase request received",
-      "participant": "participant_operator"
-    },
-    {
-      "id": "task_1", 
-      "type": "bpmn:UserTask",
-      "name": "Review purchase request",
-      "participant": "participant_ops"
-    },
-    {
-      "id": "gateway_1",
-      "type": "bpmn:ExclusiveGateway", 
-      "name": "Amount exceeds limit?",
-      "participant": "participant_ops"
-    },
-    {
-      "id": "task_2",
-      "type": "bpmn:UserTask",
-      "name": "Approve purchase",
-      "participant": "participant_ops"
-    },
-    {
-      "id": "task_3",
-      "type": "bpmn:UserTask",
-      "name": "Edit and resubmit",
-      "participant": "participant_operator"
-    },
-    {
-      "id": "end_1",
-      "type": "bpmn:EndEvent",
-      "name": "Purchase approved",
-      "participant": "participant_ops"
-    },
-    {
-      "id": "end_2",
-      "type": "bpmn:EndEvent",
-      "name": "Purchase rejected",
-      "participant": "participant_operator"
-    }
-  ],
-  "sequenceFlows": [
-    {
-      "id": "flow_1",
-      "sourceRef": "start_1",
-      "targetRef": "task_1"
-    },
-    {
-      "id": "flow_2", 
-      "sourceRef": "task_1",
-      "targetRef": "gateway_1"
-    },
-    {
-      "id": "flow_3",
-      "sourceRef": "gateway_1", 
-      "targetRef": "task_2",
-      "name": "Amount > $5000",
-      "conditionExpression": "amount > 5000"
-    },
-    {
-      "id": "flow_4",
-      "sourceRef": "gateway_1",
-      "targetRef": "end_2",
-      "name": "Amount <= $5000",
-      "conditionExpression": "amount <= 5000"
-    },
-    {
-      "id": "flow_5",
-      "sourceRef": "task_2",
-      "targetRef": "end_1"
-    },
-    {
-      "id": "flow_6",
-      "sourceRef": "end_2",
-      "targetRef": "task_3"
-    },
-    {
-      "id": "flow_7",
-      "sourceRef": "task_3",
-      "targetRef": "task_1"
-    }
-  ],
-  "metadata": {
-    "processName": "Purchase Request Process",
-    "complexity": "medium"
-  }
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1txzjx7" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.6.1">
+  <bpmn:collaboration id="Collaboration_0oejvqo">
+    <bpmn:participant id="Participant_1dp5nd6" name="Operator" processRef="Process_1finucl" />
+    <bpmn:participant id="Participant_0s8ezql" name="Operations Admin" processRef="Process_10wmq2z" />
+    <bpmn:messageFlow id="Flow_150pged" sourceRef="Activity_17fny9w" targetRef="Activity_02yxkto" />
+    <bpmn:messageFlow id="Flow_050pdl9" sourceRef="Activity_1tnxvtc" targetRef="Activity_02yxkto" />
+    <bpmn:messageFlow id="Flow_1utxqgm" sourceRef="Activity_15oun8x" targetRef="Activity_1tnxvtc" />
+    <bpmn:messageFlow id="Flow_0ge26wy" sourceRef="Activity_12ar3tr" targetRef="Activity_02l4cco" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_1finucl" isExecutable="false">
+    <bpmn:startEvent id="Event_0hf5otd" name="Start">
+      <bpmn:outgoing>Flow_1u4plgg</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Activity_17fny9w" name="Create PO">
+      <bpmn:incoming>Flow_1u4plgg</bpmn:incoming>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1u4plgg" sourceRef="Event_0hf5otd" targetRef="Activity_17fny9w" />
+    <bpmn:task id="Activity_1tnxvtc" name="Edit/Resubmit PO" />
+    <bpmn:task id="Activity_02l4cco" name="PO Approved">
+      <bpmn:outgoing>Flow_0qznkmq</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_0qznkmq" sourceRef="Activity_02l4cco" targetRef="Event_1covgry" />
+    <bpmn:endEvent id="Event_1covgry" name="End">
+      <bpmn:incoming>Flow_0qznkmq</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TerminateEventDefinition_16xxud9" />
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:process id="Process_10wmq2z">
+    <bpmn:sequenceFlow id="Flow_0k2uxnz" sourceRef="Gateway_02qv1py" targetRef="Activity_12ar3tr" />
+    <bpmn:sequenceFlow id="Flow_0wbns4d" sourceRef="Gateway_02qv1py" targetRef="Activity_15oun8x" />
+    <bpmn:sequenceFlow id="Flow_1gg66ru" sourceRef="Activity_1ne39zu" targetRef="Gateway_02qv1py" />
+    <bpmn:sequenceFlow id="Flow_0g0m4j1" name="No" sourceRef="Gateway_0w5mtat" targetRef="Gateway_02qv1py" />
+    <bpmn:sequenceFlow id="Flow_0n3730m" name="Yes" sourceRef="Gateway_0w5mtat" targetRef="Activity_1ne39zu" />
+    <bpmn:sequenceFlow id="Flow_0jb311n" sourceRef="Activity_02yxkto" targetRef="Gateway_0w5mtat" />
+    <bpmn:sequenceFlow id="Flow_09h338d" name="Review" sourceRef="Activity_02yxkto" targetRef="Gateway_02qv1py" />
+    <bpmn:task id="Activity_12ar3tr" name="Approve">
+      <bpmn:incoming>Flow_0k2uxnz</bpmn:incoming>
+    </bpmn:task>
+    <bpmn:task id="Activity_15oun8x" name="Reject">
+      <bpmn:incoming>Flow_0wbns4d</bpmn:incoming>
+    </bpmn:task>
+    <bpmn:task id="Activity_1ne39zu" name="Review Escalation">
+      <bpmn:incoming>Flow_0n3730m</bpmn:incoming>
+      <bpmn:outgoing>Flow_1gg66ru</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_02qv1py" name="Approve/Reject">
+      <bpmn:incoming>Flow_09h338d</bpmn:incoming>
+      <bpmn:incoming>Flow_0g0m4j1</bpmn:incoming>
+      <bpmn:incoming>Flow_1gg66ru</bpmn:incoming>
+      <bpmn:outgoing>Flow_0wbns4d</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0k2uxnz</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_0w5mtat" name="Escalate">
+      <bpmn:incoming>Flow_0jb311n</bpmn:incoming>
+      <bpmn:outgoing>Flow_0n3730m</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0g0m4j1</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Activity_02yxkto" name="Review PO">
+      <bpmn:outgoing>Flow_09h338d</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0jb311n</bpmn:outgoing>
+    </bpmn:task>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0oejvqo">
+      <bpmndi:BPMNShape id="Participant_1dp5nd6_di" bpmnElement="Participant_1dp5nd6" isHorizontal="true">
+        <dc:Bounds x="200" y="120" width="1210" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0hf5otd_di" bpmnElement="Event_0hf5otd">
+        <dc:Bounds x="262" y="222" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="268" y="265" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_17fny9w_di" bpmnElement="Activity_17fny9w">
+        <dc:Bounds x="350" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1tnxvtc_di" bpmnElement="Activity_1tnxvtc">
+        <dc:Bounds x="1000" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02l4cco_di" bpmnElement="Activity_02l4cco">
+        <dc:Bounds x="1130" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1pv8ihc_di" bpmnElement="Event_1covgry">
+        <dc:Bounds x="1282" y="222" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1290" y="265" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1u4plgg_di" bpmnElement="Flow_1u4plgg">
+        <di:waypoint x="298" y="240" />
+        <di:waypoint x="350" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qznkmq_di" bpmnElement="Flow_0qznkmq">
+        <di:waypoint x="1230" y="240" />
+        <di:waypoint x="1282" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_0s8ezql_di" bpmnElement="Participant_0s8ezql" isHorizontal="true">
+        <dc:Bounds x="200" y="390" width="1210" height="390" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02yxkto_di" bpmnElement="Activity_02yxkto">
+        <dc:Bounds x="470" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0w5mtat_di" bpmnElement="Gateway_0w5mtat" isMarkerVisible="true">
+        <dc:Bounds x="625" y="685" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="629" y="742" width="43" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_02qv1py_di" bpmnElement="Gateway_02qv1py" isMarkerVisible="true">
+        <dc:Bounds x="765" y="505" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="752" y="475" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ne39zu_di" bpmnElement="Activity_1ne39zu">
+        <dc:Bounds x="740" y="670" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15oun8x_di" bpmnElement="Activity_15oun8x">
+        <dc:Bounds x="1010" y="490" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12ar3tr_di" bpmnElement="Activity_12ar3tr">
+        <dc:Bounds x="1010" y="600" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_09h338d_di" bpmnElement="Flow_09h338d">
+        <di:waypoint x="570" y="530" />
+        <di:waypoint x="765" y="530" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="649" y="512" width="37" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jb311n_di" bpmnElement="Flow_0jb311n">
+        <di:waypoint x="570" y="530" />
+        <di:waypoint x="598" y="530" />
+        <di:waypoint x="598" y="710" />
+        <di:waypoint x="625" y="710" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="550" y="555" width="43" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n3730m_di" bpmnElement="Flow_0n3730m">
+        <di:waypoint x="675" y="710" />
+        <di:waypoint x="740" y="710" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="699" y="692" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0g0m4j1_di" bpmnElement="Flow_0g0m4j1">
+        <di:waypoint x="650" y="685" />
+        <di:waypoint x="650" y="530" />
+        <di:waypoint x="765" y="530" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="658" y="605" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gg66ru_di" bpmnElement="Flow_1gg66ru">
+        <di:waypoint x="790" y="670" />
+        <di:waypoint x="790" y="555" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0wbns4d_di" bpmnElement="Flow_0wbns4d">
+        <di:waypoint x="815" y="530" />
+        <di:waypoint x="1010" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0k2uxnz_di" bpmnElement="Flow_0k2uxnz">
+        <di:waypoint x="790" y="555" />
+        <di:waypoint x="790" y="640" />
+        <di:waypoint x="1010" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_150pged_di" bpmnElement="Flow_150pged">
+        <di:waypoint x="400" y="280" />
+        <di:waypoint x="400" y="410" />
+        <di:waypoint x="520" y="410" />
+        <di:waypoint x="520" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_050pdl9_di" bpmnElement="Flow_050pdl9">
+        <di:waypoint x="1050" y="280" />
+        <di:waypoint x="1050" y="410" />
+        <di:waypoint x="540" y="410" />
+        <di:waypoint x="540" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1utxqgm_di" bpmnElement="Flow_1utxqgm">
+        <di:waypoint x="1060" y="490" />
+        <di:waypoint x="1060" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ge26wy_di" bpmnElement="Flow_0ge26wy">
+        <di:waypoint x="1110" y="640" />
+        <di:waypoint x="1190" y="640" />
+        <di:waypoint x="1190" y="280" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+
 
 CRITICAL RULES:
-- Output ONLY the JSON, no additional text
-- Use proper BPMN element types with "bpmn:" prefix
+- Output ONLY the XML, no additional text
+- Use proper BPMN element types with "bpmn" prefix as shown in example XML
 - Every element must have a unique ID
 - All participants must be referenced consistently
 - **Assign each element to the correct participant who performs that activity**
@@ -374,459 +465,76 @@ PARTICIPANT ASSIGNMENT EXAMPLES:
 - System sending notification → System participant
 - Finance approving payment → Finance participant
 
-Generate the BPMN JSON now:`;
+Generate the BPMN XML now:`;
+  }
+
+  private getElementCenter(elementId: string, elements: BPMNElement[]): { x: number; y: number } {
+    const element = elements.find(e => e.id === elementId);
+    if (!element) return { x: 0, y: 0 };
+
+    return {
+      x: element.bounds.x + element.bounds.width / 2,
+      y: element.bounds.y + element.bounds.height / 2,
+    };
+  }
+
+  validateResponse(data: any): ValidationResult {
+    try {
+      const validatedData = BPMNDiagramSchema.parse(data);
+      return {
+        isValid: true,
+        data: validatedData
+      };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors = error.errors.map(err =>
+          `${err.path.join('.')}: ${err.message}`
+        );
+        return { isValid: false, errors };
+      }
+      return { isValid: false, errors: ['Unknown validation error'] };
     }
+  }
 
-    private parseAndValidateBPMNResponse(response: string): {
-        isValid: boolean;
-        data?: any;
-        errors?: string[];
-    } {
-        try {
-            const jsonMatch = response.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) {
-                return {
-                    isValid: false,
-                    errors: ['No valid JSON found in response']
-                };
-            }
+  async execute(sessionId: string, message: string): Promise<BPMNExtractionResult> {
+    const startTime = Date.now();
 
-            const parsedData = JSON.parse(jsonMatch[0]);
+    try {
+      if (!this.chatEngine) {
+        await this.initializeChatEngine(sessionId);
+      }
 
-            if (!parsedData.participants || !parsedData.elements || !parsedData.sequenceFlows) {
-                return {
-                    isValid: false,
-                    errors: ['Missing required fields: participants, elements, or sequenceFlows']
-                };
-            }
+      const extractionPrompt = this.buildBPMNExtractionPrompt(message);
 
-            return {
-                isValid: true,
-                data: parsedData
-            };
+      const response = await this.chatEngine!.chat({
+        message: extractionPrompt,
+        chatHistory: [],
+        stream: false,
+      });
 
-        } catch (parseError) {
-            return {
-                isValid: false,
-                errors: [`JSON parsing failed: ${(parseError as Error).message}`]
-            };
+      const parseResult = response.response;
+
+
+      return {
+        response: 'BPMN process extracted successfully',
+        bpmnXML: parseResult,
+        isValid: true,
+        metadata: {
+          executionTime: Date.now() - startTime,
         }
-    }
+      };
 
-    private convertToBPMNFormat(rawData: any): BPMNDiagramData {
-        const participants: BPMNParticipant[] = [];
-        const lanes: BPMNLane[] = [];
-        const elements: BPMNElement[] = [];
-        const sequenceFlows: BPMNSequenceFlow[] = [];
-
-        // Create separate participants (swimlanes) - NO OVERLAP
-        let participantY = 80;
-        const participantHeight = 150; // Reduced height
-        const participantWidth = 1000; // Wider
-        const participantSpacing = 20; // Gap between swimlanes
-
-        rawData.participants.forEach((participant: any, index: number) => {
-            const participantBounds = {
-                x: 50,
-                y: participantY,
-                width: participantWidth,
-                height: participantHeight,
-            };
-
-            participants.push({
-                id: participant.id,
-                name: participant.name,
-                processRef: 'process_1',
-                bounds: participantBounds,
-            });
-
-            // Create ONE lane per participant - NO NESTING
-            lanes.push({
-                id: `lane_${index}`,
-                name: participant.name,
-                participantRef: participant.id,
-                flowNodeRefs: [],
-                bounds: {
-                    x: participantBounds.x,
-                    y: participantBounds.y,
-                    width: participantBounds.width,
-                    height: participantBounds.height,
-                },
-            });
-
-            // Move to next swimlane position
-            participantY += participantHeight + participantSpacing;
-        });
-
-        // Deduplicate elements first
-        const uniqueElements = new Map<string, any>();
-        rawData.elements.forEach((element: any) => {
-            if (!uniqueElements.has(element.id)) {
-                uniqueElements.set(element.id, element);
-            } else {
-                console.warn(`Duplicate element ID detected: ${element.id}`);
-            }
-        });
-
-        // Track elements per participant for positioning
-        const elementsPerParticipant = new Map<string, number>();
-
-        // Convert unique elements and assign to correct participants
-        Array.from(uniqueElements.values()).forEach((element: any) => {
-            const participantIndex = rawData.participants.findIndex(
-                (p: any) => p.id === element.participant
-            );
-
-            if (participantIndex === -1) {
-                console.warn(`Element ${element.id} references unknown participant ${element.participant}`);
-                return; // Skip if participant not found
-            }
-
-            const participant = participants[participantIndex];
-            const lane = lanes[participantIndex];
-
-            // Track how many elements are in this participant
-            const participantElementCount = elementsPerParticipant.get(participant.id) || 0;
-            elementsPerParticipant.set(participant.id, participantElementCount + 1);
-
-            // Position elements within participant bounds (like reference image)
-            let elementX, elementY;
-
-            if (element.type === 'bpmn:StartEvent') {
-                // Start events at the beginning of the participant lane
-                elementX = participant.bounds.x + 80;
-                elementY = participant.bounds.y + (participant.bounds.height / 2) - 18; // Center vertically
-            } else if (element.type === 'bpmn:EndEvent') {
-                // End events toward the end of the participant lane
-                elementX = participant.bounds.x + participant.bounds.width - 120;
-                elementY = participant.bounds.y + (participant.bounds.height / 2) - 18; // Center vertically
-            } else {
-                // Flow-based positioning for tasks and gateways
-                const elementsInParticipant = participantElementCount - 1; // Subtract 1 because we already incremented
-                elementX = participant.bounds.x + 200 + (elementsInParticipant % 5) * 150;
-                elementY = participant.bounds.y + 35 + Math.floor(elementsInParticipant / 5) * 80;
-
-                // Ensure elements don't go outside participant bounds
-                if (elementX + this.getElementWidth(element.type) > participant.bounds.x + participant.bounds.width - 50) {
-                    elementX = participant.bounds.x + 200;
-                    elementY = participant.bounds.y + 35 + Math.floor((elementsInParticipant + 5) / 5) * 80;
-                }
-            }
-
-            const bpmnElement: BPMNElement = {
-                id: element.id,
-                type: element.type,
-                name: element.name,
-                participant: element.participant,
-                lane: lane.id,
-                bounds: {
-                    x: elementX,
-                    y: elementY,
-                    width: this.getElementWidth(element.type),
-                    height: this.getElementHeight(element.type),
-                },
-            };
-
-            // Add gateway direction for gateways
-            if (element.type.includes('Gateway')) {
-                bpmnElement.gatewayDirection = 'Diverging';
-            }
-
-            elements.push(bpmnElement);
-
-            // Add element to lane's flowNodeRefs
-            lane.flowNodeRefs.push(element.id);
-        });
-
-        // Deduplicate sequence flows
-        const uniqueFlows = new Map<string, any>();
-
-        rawData.sequenceFlows.forEach((flow: any) => {
-            const flowKey = `${flow.sourceRef}-${flow.targetRef}`;
-
-            // Only add if we haven't seen this exact flow before
-            if (!uniqueFlows.has(flowKey)) {
-                uniqueFlows.set(flowKey, flow);
-            } else {
-                console.warn(`Duplicate sequence flow detected: ${flowKey}`);
-            }
-        });
-
-        // Validate and filter flows
-        const elementIds = new Set(elements.map(e => e.id));
-        const endEventIds = elements
-            .filter(e => e.type === 'bpmn:EndEvent')
-            .map(e => e.id);
-
-        // Process unique flows with validation
-        Array.from(uniqueFlows.values()).forEach((flow: any) => {
-            const sourceExists = elementIds.has(flow.sourceRef);
-            const targetExists = elementIds.has(flow.targetRef);
-            const isInvalidEndEventFlow = endEventIds.includes(flow.sourceRef);
-
-            if (!sourceExists) {
-                console.warn(`Flow ${flow.id} references unknown source element: ${flow.sourceRef}`);
-                return;
-            }
-            if (!targetExists) {
-                console.warn(`Flow ${flow.id} references unknown target element: ${flow.targetRef}`);
-                return;
-            }
-            if (isInvalidEndEventFlow) {
-                console.warn(`Flow ${flow.id} has invalid source (End Event cannot have outgoing flows): ${flow.sourceRef}`);
-                return;
-            }
-
-            const sequenceFlow: BPMNSequenceFlow = {
-                id: flow.id,
-                sourceRef: flow.sourceRef,
-                targetRef: flow.targetRef,
-                name: flow.name,
-                conditionExpression: flow.conditionExpression,
-            };
-
-            sequenceFlows.push(sequenceFlow);
-        });
-
-        const bpmnData: BPMNDiagramData = {
-            processes: [{
-                id: 'process_1',
-                name: rawData.metadata.processName,
-                isExecutable: false,
-                elements,
-                sequenceFlows,
-            }],
-            participants,
-            lanes,
-            metadata: {
-                processName: rawData.metadata.processName,
-                totalElements: elements.length,
-                complexity: rawData.metadata.complexity,
-                createdAt: new Date().toISOString(),
-                bpmnVersion: '2.0',
-            },
-        };
-
-        // Validate with Zod schema
-        const validationResult = BPMNDiagramSchema.safeParse(bpmnData);
-
-        if (!validationResult.success) {
-            console.error('BPMN validation failed:', validationResult.error);
-            throw new Error(`BPMN schema validation failed: ${validationResult.error.message}`);
+    } catch (error) {
+      return {
+        response: 'BPMN extraction failed',
+        isValid: false,
+        validationErrors: [`Execution error: ${(error as Error).message}`],
+        metadata: {
+          executionTime: Date.now() - startTime,
         }
-
-        return validationResult.data;
+      };
     }
-
-    private getElementWidth(type: string): number {
-        const widths: { [key: string]: number } = {
-            'bpmn:StartEvent': 36,
-            'bpmn:EndEvent': 36,
-            'bpmn:Task': 100,
-            'bpmn:UserTask': 100,
-            'bpmn:ServiceTask': 100,
-            'bpmn:ExclusiveGateway': 50,
-            'bpmn:ParallelGateway': 50,
-        };
-        return widths[type] || 100;
-    }
-
-    private getElementHeight(type: string): number {
-        const heights: { [key: string]: number } = {
-            'bpmn:StartEvent': 36,
-            'bpmn:EndEvent': 36,
-            'bpmn:Task': 80,
-            'bpmn:UserTask': 80,
-            'bpmn:ServiceTask': 80,
-            'bpmn:ExclusiveGateway': 50,
-            'bpmn:ParallelGateway': 50,
-        };
-        return heights[type] || 80;
-    }
-
-    private generateBPMNXML(bpmnData: BPMNDiagramData): string {
-        const process = bpmnData.processes[0];
-
-        let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
-                 xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
-                 xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
-                 xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
-                 id="Definitions_1" 
-                 targetNamespace="http://bpmn.io/schema/bpmn">
-  
-  <bpmn:collaboration id="Collaboration_1">`;
-
-        // Add participants
-        bpmnData.participants.forEach(participant => {
-            xml += `
-    <bpmn:participant id="${participant.id}" name="${participant.name}" processRef="${participant.processRef}" />`;
-        });
-
-        xml += `
-  </bpmn:collaboration>
-  
-  <bpmn:process id="${process.id}" name="${process.name}" isExecutable="${process.isExecutable}">
-    <bpmn:laneSet id="LaneSet_1">`;
-
-        // Add ALL lanes within single laneSet
-        bpmnData.lanes?.forEach(lane => {
-            xml += `
-      <bpmn:lane id="${lane.id}" name="${lane.name}">`;
-            lane.flowNodeRefs.forEach(nodeRef => {
-                xml += `
-        <bpmn:flowNodeRef>${nodeRef}</bpmn:flowNodeRef>`;
-            });
-            xml += `
-      </bpmn:lane>`;
-        });
-
-        xml += `
-    </bpmn:laneSet>`;
-
-        // Add elements with proper BPMN syntax - CHANGED THIS PART
-        process.elements.forEach(element => {
-            const elementType = element.type.replace('bpmn:', ''); // Remove bpmn: prefix for XML tag
-            xml += `
-    <bpmn:${elementType} id="${element.id}" name="${element.name}" />`;
-        });
-
-        // Add sequence flows
-        process.sequenceFlows.forEach(flow => {
-            xml += `
-    <bpmn:sequenceFlow id="${flow.id}" sourceRef="${flow.sourceRef}" targetRef="${flow.targetRef}"`;
-            if (flow.name) xml += ` name="${flow.name}"`;
-            xml += ` />`;
-        });
-
-        xml += `
-  </bpmn:process>
-  
-  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">`;
-
-        // Add participant shapes
-        bpmnData.participants.forEach(participant => {
-            xml += `
-      <bpmndi:BPMNShape id="${participant.id}_di" bpmnElement="${participant.id}" isHorizontal="true">
-        <dc:Bounds x="${participant.bounds.x}" y="${participant.bounds.y}" width="${participant.bounds.width}" height="${participant.bounds.height}" />
-      </bpmndi:BPMNShape>`;
-        });
-
-        // Add lane shapes
-        bpmnData.lanes?.forEach(lane => {
-            xml += `
-      <bpmndi:BPMNShape id="${lane.id}_di" bpmnElement="${lane.id}" isHorizontal="true">
-        <dc:Bounds x="${lane.bounds.x}" y="${lane.bounds.y}" width="${lane.bounds.width}" height="${lane.bounds.height}" />
-      </bpmndi:BPMNShape>`;
-        });
-
-        // Add element shapes
-        process.elements.forEach(element => {
-            xml += `
-      <bpmndi:BPMNShape id="${element.id}_di" bpmnElement="${element.id}">
-        <dc:Bounds x="${element.bounds.x}" y="${element.bounds.y}" width="${element.bounds.width}" height="${element.bounds.height}" />
-      </bpmndi:BPMNShape>`;
-        });
-
-        // Add sequence flow edges
-        process.sequenceFlows.forEach(flow => {
-            xml += `
-      <bpmndi:BPMNEdge id="${flow.id}_di" bpmnElement="${flow.id}">
-        <di:waypoint x="${this.getElementCenter(flow.sourceRef, process.elements).x}" y="${this.getElementCenter(flow.sourceRef, process.elements).y}" />
-        <di:waypoint x="${this.getElementCenter(flow.targetRef, process.elements).x}" y="${this.getElementCenter(flow.targetRef, process.elements).y}" />
-      </bpmndi:BPMNEdge>`;
-        });
-
-        xml += `
-    </bpmndi:BPMNPlane>
-  </bpmndi:BPMNDiagram>
-</bpmn:definitions>`;
-
-        return xml;
-    }
-
-    private getElementCenter(elementId: string, elements: BPMNElement[]): { x: number; y: number } {
-        const element = elements.find(e => e.id === elementId);
-        if (!element) return { x: 0, y: 0 };
-
-        return {
-            x: element.bounds.x + element.bounds.width / 2,
-            y: element.bounds.y + element.bounds.height / 2,
-        };
-    }
-
-    validateResponse(data: any): ValidationResult {
-        try {
-            const validatedData = BPMNDiagramSchema.parse(data);
-            return {
-                isValid: true,
-                data: validatedData
-            };
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                const errors = error.errors.map(err =>
-                    `${err.path.join('.')}: ${err.message}`
-                );
-                return { isValid: false, errors };
-            }
-            return { isValid: false, errors: ['Unknown validation error'] };
-        }
-    }
-
-    async execute(sessionId: string, message: string): Promise<BPMNExtractionResult> {
-        const startTime = Date.now();
-
-        try {
-            if (!this.chatEngine) {
-                await this.initializeChatEngine(sessionId);
-            }
-
-            const extractionPrompt = this.buildBPMNExtractionPrompt(message);
-
-            const response = await this.chatEngine!.chat({
-                message: extractionPrompt,
-                chatHistory: [],
-                stream: false,
-            });
-
-            const parseResult = this.parseAndValidateBPMNResponse(response.response);
-
-            if (parseResult.isValid && parseResult.data) {
-                const bpmnData = this.convertToBPMNFormat(parseResult.data);
-                const bpmnXML = this.generateBPMNXML(bpmnData);
-
-                return {
-                    response: 'BPMN process extracted successfully',
-                    bpmnData,
-                    bpmnXML,
-                    isValid: true,
-                    metadata: {
-                        executionTime: Date.now() - startTime,
-                    }
-                };
-            } else {
-                return {
-                    response: 'BPMN extraction failed',
-                    isValid: false,
-                    validationErrors: parseResult.errors,
-                    metadata: {
-                        executionTime: Date.now() - startTime,
-                    }
-                };
-            }
-
-        } catch (error) {
-            return {
-                response: 'BPMN extraction failed',
-                isValid: false,
-                validationErrors: [`Execution error: ${(error as Error).message}`],
-                metadata: {
-                    executionTime: Date.now() - startTime,
-                }
-            };
-        }
-    }
+  }
 }
 
 export default BPMNProcessExtractionAgent;

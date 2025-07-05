@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import BPMNViewer from './BPMNViewer';
-import type { BPMNDiagramData } from './types/ProcessDiagram';
 
 interface ProcessExtractionPageProps {
   socketUrl?: string;
@@ -16,7 +15,6 @@ interface ExtractionState {
 }
 
 interface ExtractedProcess {
-  bpmnData: BPMNDiagramData;
   bpmnXML: string;
   metadata: {
     sessionId: string;
@@ -74,6 +72,7 @@ const ProcessExtractionPage: React.FC<ProcessExtractionPageProps> = ({
     // Successful extraction
     socket.on('bpmn:extracted', (data: ExtractedProcess) => {
       setExtractedProcess(data);
+      console.log(data.bpmnXML);
       setHistory(prev => [data, ...prev.slice(0, 9)]); // Keep last 10
       setExtractionState(prev => ({
         ...prev,
@@ -287,26 +286,6 @@ Example: 'Users can submit purchase orders which need approval from their manage
             )}
           </div>
 
-          {/* Process Info */}
-          {extractedProcess && (
-            <div style={{
-              padding: '12px',
-              backgroundColor: '#d4edda',
-              border: '1px solid #c3e6cb',
-              borderRadius: '6px',
-              fontSize: '14px',
-            }}>
-              <h4 style={{ margin: '0 0 8px 0', color: '#155724' }}>
-                {extractedProcess.bpmnData.metadata.processName}
-              </h4>
-              <div style={{ color: '#155724', fontSize: '12px' }}>
-                <div>Elements: {extractedProcess.bpmnData.metadata.totalElements}</div>
-                <div>Complexity: {extractedProcess.bpmnData.metadata.complexity}</div>
-                <div>Participants: {extractedProcess.bpmnData.participants.length}</div>
-              </div>
-            </div>
-          )}
-
           {/* Element Inspector */}
           {selectedElement && (
             <div style={{
@@ -372,9 +351,6 @@ Example: 'Users can submit purchase orders which need approval from their manage
                       transition: 'background-color 0.2s',
                     }}
                   >
-                    <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
-                      {item.bpmnData.metadata.processName}
-                    </div>
                     <div style={{ color: '#666' }}>
                       {new Date(item.metadata.extractedAt).toLocaleTimeString()}
                     </div>
@@ -389,7 +365,6 @@ Example: 'Users can submit purchase orders which need approval from their manage
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <BPMNViewer
             bpmnXML={extractedProcess?.bpmnXML}
-            bpmnData={extractedProcess?.bpmnData}
             mode="viewer"
             height="100%"
             onElementClick={handleElementClick}

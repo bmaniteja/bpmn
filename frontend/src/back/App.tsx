@@ -1,12 +1,12 @@
 import './App.css'
-
-import SwimLanesViewer from './SwimLanesViewer'
+import ProcessExtractionPage from './ProcessExtractionPage';
 import { initialNodes, initialEdges } from './data'
+
 
 function App() {
   return (
     <>
-      <SwimLanesViewer initialNodes={initialNodes} initialEdges={initialEdges}/>
+      <ProcessExtractionPage />
     </>
   )
 }
