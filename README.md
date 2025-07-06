@@ -4,7 +4,7 @@ An intelligent system that converts natural language feature descriptions into i
 
 ## 💻 Rendered Output
 
-![Process Extraction Demo](./public/3.png)
+![Process Extraction Demo](./public/main.png)
 ## 💥 Bonus Features
 ![Process Extraction Demo](./public/5.png)
 
