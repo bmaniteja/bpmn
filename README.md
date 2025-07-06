@@ -2,7 +2,11 @@
 
 An intelligent system that converts natural language feature descriptions into interactive BPMN (Business Process Model and Notation) swimlane diagrams using AI-powered process extraction.
 
+## 💻 Rendered Output
+
 ![Process Extraction Demo](./public/3.png)
+## 💥 Bonus Features
+![Process Extraction Demo](./public/5.png)
 
 ## 🚀 Features
 
@@ -171,10 +175,8 @@ The system uses Zod schemas for validation:
 ```typescript
 // Process diagram structure
 interface ProcessDiagramData {
-actors: string[];
 nodes: ReactFlowNode[];
 edges: ReactFlowEdge[];
-swimlanes: Swimlane[];
 metadata: {
 processName: string;
 totalSteps: number;
@@ -184,43 +186,10 @@ createdAt: string;
 }
 ```
 
-## 🧪 Development
-
-### Project Structure
-
-```
-src/
-├── agents/
-│ ├── BaseAgent.ts # Abstract agent foundation
-│ └── ProcessExtractionAgent.ts # BPMN extraction specialist
-├── providers/
-│ ├── LLMProvider.interface.ts # Provider interface
-│ ├── OpenAI.provider.ts # OpenAI integration
-│ ├── AzureOpenAI.provider.ts # Azure OpenAI integration
-│ └── Anthropic.provider.ts # Anthropic integration
-├── routes/ # Express routes
-├── middlewares/ # Express middlewares
-└── config/ # Configuration files
-```
-
-
-### Building
-
-```bash
-# Build for production
-npm run build
-
-# Start production server
-npm start
-```
 
 ## Libraries Used
 
 - [LlamaIndex](https://github.com/run-llama/LlamaIndex) for AI integration framework
 - [React-Flow](https://reactflow.dev/) for diagram rendering
-- [bpmn.io](https://bpmn.io/) for BPMN inspiration
+- [bpmn.io](https://bpmn.io/) BPMN for inspiration
 - [Socket.io](https://socket.io/) for real-time communication
-
------
-
-**Developed for Interview Assessment - BPMN Process Visualization System**

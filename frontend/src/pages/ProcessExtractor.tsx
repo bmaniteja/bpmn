@@ -100,7 +100,7 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
       });
       setTimeout(() => {
         setExtractionState({
-        status: 'complete',
+        status: 'idle',
         loading: false,
         error: null,
         action: 'Conencted & Waiting',
@@ -125,8 +125,8 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
       <Alert className='items-center content-center mb-5'>
         {extractionState.Icon && <extractionState.Icon />}{`${extractionState.action}`}
       </Alert>
-      <Textarea name='featureDescription' className='mb-4' placeholder={palceHolder} value={featureDescription} onChange={(e) => setFeatureDescription(e.target.value)}></Textarea>
-      <Button disabled={extractionState.status === 'connecting'} variant={'outline'} onClick={startExtraction} className='cursor-pointer'> <MagicWandIcon /> Generate</Button>
+      <Textarea disabled={extractionState.status !== 'idle'} name='featureDescription' className='mb-4' placeholder={palceHolder} value={featureDescription} onChange={(e) => setFeatureDescription(e.target.value)}></Textarea>
+      <Button disabled={extractionState.status !== 'idle'} variant={'outline'} onClick={startExtraction} className='cursor-pointer'> <MagicWandIcon /> Generate</Button>
     </div>
   </>);
 }

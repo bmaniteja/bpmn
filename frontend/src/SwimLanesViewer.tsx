@@ -65,9 +65,9 @@ const getLayoutedElements = (nodes: any[] = [], edges: any[] = [], direction = '
   const swimLanesWidthHeight: any = {
     width: 0
   };
-  const swimLanesById:any = {};
+  const swimLanesById: any = {};
   nodes.forEach((node: any) => {
-    if(node.type === 'swimLaneNode') {
+    if (node.type === 'swimLaneNode') {
       if (!swimLanesById[node.id]) {
         swimLanesById[node.id] = node;
       }
@@ -152,11 +152,13 @@ const SwimLanesViewer: React.FC<{ initialNodes: any[], initialEdges: any[], isMo
     endNode: EndNode
   }
   const [data, setData] = useState<{ initialNodes: any[], initialEdges: any[] }>({ initialNodes, initialEdges });
+  const [nodes, setNodes, onNodesChange] = useNodesState(data.initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(data.initialNodes);
   const [toggleEditor, setToggleEditor] = useState<boolean>(false);
   const [instance, setInstance] = useState<ReactFlowInstance<Node, any> | null>(null);
   const resizeHandler = debounce(() => {
-      instance?.fitView();
-    }, 100);
+    instance?.fitView();
+  }, 100);
 
   useEffect(() => {
     window.addEventListener('resize', resizeHandler);
@@ -172,7 +174,7 @@ const SwimLanesViewer: React.FC<{ initialNodes: any[], initialEdges: any[], isMo
     );
     setNodes(calculatedNodes.nodes);
     setEdges(calculatedNodes.edges);
-    setTimeout(() => instance?.fitView(),100)
+    setTimeout(() => instance?.fitView(), 100)
   }, [data.initialEdges, data.initialNodes]);
 
   useEffect(() => {
@@ -181,15 +183,6 @@ const SwimLanesViewer: React.FC<{ initialNodes: any[], initialEdges: any[], isMo
     })
   }, [initialEdges, initialNodes]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(data.initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(data.initialNodes);
-  const onConnect = useCallback(
-    (params: any) =>
-      setEdges((eds) =>
-        addEdge({ ...params, type: ConnectionLineType.SmoothStep, animated: true }, eds),
-      ),
-    [],
-  );
 
   return (
     <div className='flex-col content-center h-dvh flex-1 lg:flex-3/4'>
@@ -199,7 +192,7 @@ const SwimLanesViewer: React.FC<{ initialNodes: any[], initialEdges: any[], isMo
       })}>
         <ReactFlow
           nodes={nodes as Node[]}
-          onConnect={onConnect}
+          // onConnect={onConnect}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
