@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import './App.css'
 import './styles/styles.global.css'
 
-import { generatedEdges, genereatedNodes } from './data'
+import { generatedEdges, genereatedNodes } from './mock/data'
 import {SwimLanesViewer, ProcessExtractor} from '@/components/organisms'
 
 function App() {
