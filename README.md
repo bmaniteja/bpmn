@@ -203,15 +203,6 @@ src/
 └── config/ # Configuration files
 ```
 
-### Testing
-
-```bash
-# Run tests
-npm test
-
-# Run with coverage
-npm run test:coverage
-```
 
 ### Building
 
@@ -223,7 +214,7 @@ npm run build
 npm start
 ```
 
-## 🙏 Acknowledgments
+## Libraries Used
 
 - [LlamaIndex](https://github.com/run-llama/LlamaIndex) for AI integration framework
 - [React-Flow](https://reactflow.dev/) for diagram rendering
