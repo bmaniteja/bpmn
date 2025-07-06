@@ -64,7 +64,7 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
         status: 'idle',
         loading: false,
         error: null,
-        action: 'Conencted & Waiting',
+        action: 'Connected & Waiting',
         Icon: () => <CheckCircledIcon />
       })
     }, 1000)
@@ -126,7 +126,7 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
         {extractionState.Icon && <extractionState.Icon />}{`${extractionState.action}`}
       </Alert>
       <Textarea name='featureDescription' className='mb-4' placeholder={palceHolder} value={featureDescription} onChange={(e) => setFeatureDescription(e.target.value)}></Textarea>
-      <Button disabled={extractionState.status === 'connecting'} variant={'outline'} onClick={startExtraction} className='cursor-pointer hover:text-black hover:bg-white'> <MagicWandIcon /> Generate</Button>
+      <Button disabled={extractionState.status === 'connecting'} variant={'outline'} onClick={startExtraction} className='cursor-pointer'> <MagicWandIcon /> Generate</Button>
     </div>
   </>);
 }
