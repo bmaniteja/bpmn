@@ -1,12 +1,10 @@
-import clsx from 'clsx';
 import React, { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { MagicWandIcon, CheckCircledIcon } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import { Loader2Icon } from "lucide-react";
-import { Alert } from '@/components/ui/alert';
+import { io, Socket } from 'socket.io-client';
+import { Button, Textarea, Alert } from '@/components/ui';
+import { MagicWandIcon, CheckCircledIcon } from '@radix-ui/react-icons';
+
 interface ProcessExtractionPageProps {
   socketUrl?: string;
   className?: string;
@@ -70,7 +68,6 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
     }, 1000)
     const socket = socketRef.current;
     socket.on('agent:status', (status: { status: string; action?: string }) => {
-      // @ts-expect-error
       setExtractionState(prev => ({
         ...prev,
         status: status.status as any,
@@ -131,4 +128,4 @@ const ProcessExtractor: React.FC<ProcessExtractionPageProps> = ({
   </>);
 }
 
-export default ProcessExtractor;
+export { ProcessExtractor };

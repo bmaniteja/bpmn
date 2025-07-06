@@ -1,20 +1,16 @@
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import clsx from 'clsx';
 import dagre from '@dagrejs/dagre';
 import { toPng } from 'html-to-image';
+import '@xyflow/react/dist/style.css';
+import { Badge } from '@/components/ui';
 import { JsonEditor, githubDarkTheme } from 'json-edit-react';
 import { CodeIcon, DownloadIcon, ImageIcon, StarIcon } from '@radix-ui/react-icons'
-import { ReactFlow, Controls, Background, type Node, useNodesState, useEdgesState, addEdge, ConnectionLineType, ControlButton, type ReactFlowInstance } from '@xyflow/react';
+import { StartNode, SwimLaneNode, DecisionNode, ProcessNode, EndNode } from '@/components/nodes';
+import { ReactFlow, Controls, Background, type Node, useNodesState, useEdgesState, ControlButton, type ReactFlowInstance } from '@xyflow/react';
 
-import '@xyflow/react/dist/style.css';
-
-import StartNode from './nodes/Start';
-import ProcessNode from './nodes/Process';
-import SwimLaneNode from './nodes/SwimLane';
-import DecisionNode from './nodes/Decision';
-import EndNode from './nodes/End';
-import clsx from 'clsx';
-import { Badge } from './components/ui/badge';
 
 const getNodeDimensions = (type: string) => {
   let dimesions;
@@ -275,4 +271,4 @@ const SwimLanesViewer: React.FC<{ initialNodes: any[], initialEdges: any[], isMo
   );
 }
 
-export default SwimLanesViewer;
+export { SwimLanesViewer };

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
+
 import './App.css'
 import './styles/styles.global.css'
 
-import SwimLanesViewer from './SwimLanesViewer'
 import { generatedEdges, genereatedNodes } from './data'
-import ProcessExtractor from './pages/ProcessExtractor'
+import {SwimLanesViewer, ProcessExtractor} from '@/components/organisms'
 
 function App() {
 
